@@ -1,0 +1,165 @@
+'use client'
+
+import { useCart } from '@/components/shop/CartContext'
+import Navbar from '@/components/layout/Navbar'
+import Footer from '@/components/layout/Footer'
+import Link from 'next/link'
+import { Trash2, ArrowLeft, ImageOff } from 'lucide-react'
+
+const formatPrice = (n: number) =>
+  new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n)
+
+export default function CarritoPage() {
+  const { items, total, removeItem, updateQuantity, count } = useCart()
+
+  return (
+    <>
+      <Navbar />
+
+      <main className="pt-28 min-h-screen">
+        <div className="max-w-5xl mx-auto px-6 py-12">
+
+          {/* Header */}
+          <div className="flex items-center gap-4 mb-12">
+            <Link href="/tienda" className="text-[var(--color-stone)] hover:text-[var(--color-charcoal)] transition-colors">
+              <ArrowLeft size={20} strokeWidth={1.5} />
+            </Link>
+            <div>
+              <h1 className="font-display text-4xl font-light text-[var(--color-charcoal)]">Carrito</h1>
+              <p className="text-sm text-[var(--color-stone)] mt-0.5 font-light">
+                {count} {count === 1 ? 'producto' : 'productos'}
+              </p>
+            </div>
+          </div>
+
+          {items.length === 0 ? (
+            <div className="py-24 text-center">
+              <p className="font-display text-3xl font-light text-[var(--color-stone)] mb-6">Tu carrito está vacío</p>
+              <Link
+                href="/tienda"
+                className="inline-flex items-center gap-2 text-xs tracking-[0.2em] uppercase border-b border-[var(--color-charcoal)] pb-1 text-[var(--color-charcoal)] hover:text-[var(--color-stone)] hover:border-[var(--color-stone)] transition-colors"
+              >
+                Ir a la tienda
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+
+              {/* Items */}
+              <div className="lg:col-span-2 space-y-6">
+                {items.map(item => (
+                  <div key={item.variantId} className="flex gap-5 pb-6 border-b border-[var(--color-border)]">
+
+                    {/* Imagen */}
+                    <div className="w-24 h-32 bg-[#F2EEE9] flex-shrink-0 overflow-hidden">
+                      {item.imageUrl ? (
+                        <img src={item.imageUrl} alt={item.productName} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <ImageOff size={20} className="text-[var(--color-border)]" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-light text-[var(--color-charcoal)] truncate">{item.productName}</p>
+                      {item.variantDesc && (
+                        <p className="text-xs text-[var(--color-stone)] mt-0.5">{item.variantDesc}</p>
+                      )}
+                      {item.priceType === 'wholesale' && (
+                        <span className="inline-block mt-1 text-[10px] tracking-wider uppercase bg-[#F2EEE9] text-[var(--color-stone)] px-2 py-0.5">
+                          Precio mayorista
+                        </span>
+                      )}
+
+                      <div className="flex items-center justify-between mt-4">
+                        {/* Cantidad */}
+                        <div className="flex items-center border border-[var(--color-border)]">
+                          <button
+                            onClick={() => updateQuantity(item.variantId, item.quantity - 1)}
+                            className="w-8 h-8 flex items-center justify-center text-[var(--color-charcoal)] hover:bg-[var(--color-border)] transition-colors text-sm"
+                          >
+                            −
+                          </button>
+                          <span className="w-8 text-center text-sm font-light">{item.quantity}</span>
+                          <button
+                            onClick={() => updateQuantity(item.variantId, item.quantity + 1)}
+                            className="w-8 h-8 flex items-center justify-center text-[var(--color-charcoal)] hover:bg-[var(--color-border)] transition-colors text-sm"
+                          >
+                            +
+                          </button>
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                          <p className="text-sm font-light text-[var(--color-charcoal)]">
+                            {formatPrice(item.price * item.quantity)}
+                          </p>
+                          <button
+                            onClick={() => removeItem(item.variantId)}
+                            className="text-[var(--color-border)] hover:text-red-400 transition-colors"
+                          >
+                            <Trash2 size={15} strokeWidth={1.5} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Resumen */}
+              <div className="lg:col-span-1">
+                <div className="bg-[#F2EEE9] p-6 sticky top-28">
+                  <p className="text-xs tracking-[0.2em] uppercase text-[var(--color-stone)] mb-6">
+                    Resumen del pedido
+                  </p>
+
+                  <div className="space-y-3 mb-6">
+                    {items.map(item => (
+                      <div key={item.variantId} className="flex justify-between text-sm font-light">
+                        <span className="text-[var(--color-stone)] truncate mr-2">
+                          {item.productName} ×{item.quantity}
+                        </span>
+                        <span className="text-[var(--color-charcoal)] flex-shrink-0">
+                          {formatPrice(item.price * item.quantity)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="border-t border-[var(--color-border)] pt-4 mb-6">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs tracking-[0.15em] uppercase text-[var(--color-charcoal)]">Total</span>
+                      <span className="font-display text-2xl font-light text-[var(--color-charcoal)]">
+                        {formatPrice(total)}
+                      </span>
+                    </div>
+                    <p className="text-xs text-[var(--color-stone)] mt-1">Envío calculado al finalizar</p>
+                  </div>
+
+                  <Link
+                    href="/checkout"
+                    className="block w-full py-4 bg-[var(--color-charcoal)] text-white text-xs tracking-[0.2em] uppercase text-center hover:bg-[var(--color-stone)] transition-colors"
+                  >
+                    Finalizar compra
+                  </Link>
+
+                  <Link
+                    href="/tienda"
+                    className="block w-full py-3 text-center text-xs tracking-[0.15em] uppercase text-[var(--color-stone)] hover:text-[var(--color-charcoal)] transition-colors mt-3"
+                  >
+                    Seguir comprando
+                  </Link>
+                </div>
+              </div>
+
+            </div>
+          )}
+        </div>
+      </main>
+
+      <Footer />
+    </>
+  )
+}
