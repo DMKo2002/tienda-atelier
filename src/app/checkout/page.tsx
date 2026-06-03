@@ -137,7 +137,7 @@ export default function CheckoutPage() {
     if (!order) return
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_PANEL_URL}/api/mp/crear-preferencia`, {
+      const res = await fetch('/api/mp/crear-preferencia', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
