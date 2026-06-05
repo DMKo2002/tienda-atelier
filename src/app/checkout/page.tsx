@@ -7,7 +7,6 @@ import Footer from '@/components/layout/Footer'
 import Link from 'next/link'
 import { ArrowLeft, CreditCard, Building2, ImageOff, Check } from 'lucide-react'
 import { createClient, TENANT_ID } from '@/lib/supabase'
-import { QRCodeSVG } from 'qrcode.react'
 
 const formatPrice = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n)
@@ -21,7 +20,7 @@ export default function CheckoutPage() {
   const [error, setError] = useState<string | null>(null)
   const [storeConfig, setStoreConfig] = useState<any>(null)
   const [currentOrderId, setCurrentOrderId] = useState<string | null>(null)
-  const [orderTotal, setOrderTotal] = useState(0) // <-- NUEVO: guarda el total antes de limpiar carrito
+  const [orderTotal, setOrderTotal] = useState(0)
 
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
@@ -126,7 +125,7 @@ export default function CheckoutPage() {
     const order = await createOrder('transfer')
     if (!order) return
     setCurrentOrderId(order.id)
-    setOrderTotal(total) // <-- NUEVO: guardar total ANTES de limpiar carrito
+    setOrderTotal(total)
     clearCart()
     setStep('qr')
     setLoading(false)
@@ -137,13 +136,6 @@ export default function CheckoutPage() {
     setCopied(type)
     setTimeout(() => setCopied(null), 2000)
   }
-
-  // <-- CAMBIO: usar alias solo como texto, que es el formato que leen todas las billeteras
-  const qrValue = storeConfig?.transfer_alias
-  ? `https://mpago.la/transfer?alias=${storeConfig.transfer_alias}`
-  : storeConfig?.transfer_cbu
-  ? `https://mpago.la/transfer?cvu=${storeConfig.transfer_cbu}`
-  : ''
 
   if (items.length === 0 && step !== 'qr') {
     return (
@@ -162,15 +154,19 @@ export default function CheckoutPage() {
     )
   }
 
+  // ── PANTALLA TRANSFERENCIA ────────────────────────────────
   if (step === 'qr') {
     return (
       <>
         <Navbar />
         <main className="pt-28 min-h-screen flex items-center justify-center">
           <div className="max-w-sm w-full mx-auto px-6 text-center">
-            <p className="text-xs tracking-[0.2em] uppercase text-[var(--color-stone)] mb-2">Transferencia / QR</p>
+
+            <p className="text-xs tracking-[0.2em] uppercase text-[var(--color-stone)] mb-2">
+              Transferencia bancaria
+            </p>
             <h1 className="font-display text-4xl font-light text-[var(--color-charcoal)] mb-1">
-              {formatPrice(orderTotal)} {/* <-- CAMBIO: orderTotal en vez de total */}
+              {formatPrice(orderTotal)}
             </h1>
             {currentOrderId && (
               <p className="text-xs text-[var(--color-stone)] font-mono mb-8">
@@ -178,23 +174,31 @@ export default function CheckoutPage() {
               </p>
             )}
 
-            {qrValue && (
+            {/* Botón pagar con MP */}
+            {storeConfig?.transfer_alias && (
               <div className="flex flex-col items-center mb-8">
-                <div className="p-6 bg-white border-2 border-[var(--color-border)] rounded-2xl inline-block mb-3 shadow-sm">
-                  <QRCodeSVG value={qrValue} size={220} bgColor="#FFFFFF" fgColor="#1C1C1C" level="M" />
-                </div>
+                <a
+                  href={`https://mpago.la/transfer?alias=${storeConfig.transfer_alias}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full py-4 bg-[#009EE3] text-white text-xs tracking-[0.2em] uppercase text-center hover:opacity-90 transition-opacity rounded-lg mb-3"
+                >
+                  Pagar con MercadoPago →
+                </a>
                 <p className="text-xs text-[var(--color-stone)]">
-                  Escaneá con MP, Ualá, Naranja X o cualquier billetera virtual
+                  Se abre la app de MercadoPago con la transferencia lista
                 </p>
               </div>
             )}
 
+            {/* Separador */}
             <div className="flex items-center gap-3 mb-5">
               <div className="flex-1 h-px bg-[var(--color-border)]" />
               <span className="text-xs text-[var(--color-stone)]">o transferí manualmente</span>
               <div className="flex-1 h-px bg-[var(--color-border)]" />
             </div>
 
+            {/* Alias y CBU */}
             <div className="space-y-3 mb-8">
               {storeConfig?.transfer_alias && (
                 <div className="flex items-center justify-between bg-[#F2EEE9] px-4 py-3 text-left">
@@ -202,7 +206,10 @@ export default function CheckoutPage() {
                     <p className="text-xs text-[var(--color-stone)] mb-0.5">Alias</p>
                     <p className="text-sm font-light text-[var(--color-charcoal)]">{storeConfig.transfer_alias}</p>
                   </div>
-                  <button onClick={() => copyToClipboard(storeConfig.transfer_alias, 'alias')} className="text-xs text-[var(--color-stone)] hover:text-[var(--color-charcoal)] transition-colors flex items-center gap-1 flex-shrink-0 ml-4">
+                  <button
+                    onClick={() => copyToClipboard(storeConfig.transfer_alias, 'alias')}
+                    className="text-xs text-[var(--color-stone)] hover:text-[var(--color-charcoal)] transition-colors flex items-center gap-1 flex-shrink-0 ml-4"
+                  >
                     {copied === 'alias' ? <><Check size={12} /> Copiado</> : 'Copiar'}
                   </button>
                 </div>
@@ -213,7 +220,10 @@ export default function CheckoutPage() {
                     <p className="text-xs text-[var(--color-stone)] mb-0.5">CBU</p>
                     <p className="text-xs font-mono font-light text-[var(--color-charcoal)] break-all">{storeConfig.transfer_cbu}</p>
                   </div>
-                  <button onClick={() => copyToClipboard(storeConfig.transfer_cbu, 'cbu')} className="text-xs text-[var(--color-stone)] hover:text-[var(--color-charcoal)] transition-colors flex items-center gap-1 flex-shrink-0 ml-4">
+                  <button
+                    onClick={() => copyToClipboard(storeConfig.transfer_cbu, 'cbu')}
+                    className="text-xs text-[var(--color-stone)] hover:text-[var(--color-charcoal)] transition-colors flex items-center gap-1 flex-shrink-0 ml-4"
+                  >
                     {copied === 'cbu' ? <><Check size={12} /> Copiado</> : 'Copiar'}
                   </button>
                 </div>
@@ -228,13 +238,17 @@ export default function CheckoutPage() {
               {storeConfig?.whatsapp_number && (
                 <a
                   href={`https://wa.me/${storeConfig.whatsapp_number.replace(/\D/g, '')}?text=Hola! Realicé el pedido %23${currentOrderId?.slice(0, 8).toUpperCase() ?? ''} por ${formatPrice(orderTotal)} y quiero enviar el comprobante.`}
-                  target="_blank" rel="noopener noreferrer"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="block w-full py-3.5 bg-[var(--color-charcoal)] text-white text-xs tracking-[0.2em] uppercase text-center hover:bg-[var(--color-stone)] transition-colors"
                 >
                   Enviar comprobante por WhatsApp
                 </a>
               )}
-              <Link href="/tienda" className="block w-full py-3 border border-[var(--color-border)] text-xs tracking-[0.2em] uppercase text-center text-[var(--color-stone)] hover:border-[var(--color-charcoal)] hover:text-[var(--color-charcoal)] transition-colors">
+              <Link
+                href="/tienda"
+                className="block w-full py-3 border border-[var(--color-border)] text-xs tracking-[0.2em] uppercase text-center text-[var(--color-stone)] hover:border-[var(--color-charcoal)] hover:text-[var(--color-charcoal)] transition-colors"
+              >
                 Seguir comprando
               </Link>
             </div>
@@ -245,11 +259,13 @@ export default function CheckoutPage() {
     )
   }
 
+  // ── CHECKOUT NORMAL ──────────────────────────────────────
   return (
     <>
       <Navbar />
       <main className="pt-28 min-h-screen">
         <div className="max-w-5xl mx-auto px-6 py-12">
+
           <div className="flex items-center gap-4 mb-10">
             <Link href="/carrito" className="text-[var(--color-stone)] hover:text-[var(--color-charcoal)] transition-colors">
               <ArrowLeft size={20} strokeWidth={1.5} />
@@ -261,6 +277,7 @@ export default function CheckoutPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             <div className="lg:col-span-2">
+
               {step === 'datos' && (
                 <div className="space-y-5">
                   <div className="space-y-4">
@@ -368,8 +385,8 @@ export default function CheckoutPage() {
                         <Building2 size={20} className="text-emerald-600" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-light text-[var(--color-charcoal)]">Transferencia / QR</p>
-                        <p className="text-xs text-[var(--color-stone)] mt-0.5">Escaneá el QR o transferí al alias · Sin comisión</p>
+                        <p className="text-sm font-light text-[var(--color-charcoal)]">Transferencia bancaria</p>
+                        <p className="text-xs text-[var(--color-stone)] mt-0.5">CBU / Alias · Sin comisión</p>
                       </div>
                       <span className="text-[var(--color-stone)]">→</span>
                     </button>
@@ -382,6 +399,7 @@ export default function CheckoutPage() {
               )}
             </div>
 
+            {/* Resumen */}
             <div className="lg:col-span-1">
               <div className="bg-[#F2EEE9] p-6 sticky top-28">
                 <p className="text-xs tracking-[0.2em] uppercase text-[var(--color-stone)] mb-5">Tu pedido</p>
