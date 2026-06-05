@@ -174,22 +174,6 @@ export default function CheckoutPage() {
               </p>
             )}
 
-            {/* Botón pagar con MP */}
-            {storeConfig?.transfer_alias && (
-              <div className="flex flex-col items-center mb-8">
-                <a
-                  href={`https://mpago.la/transfer?alias=${storeConfig.transfer_alias}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full py-4 bg-[#009EE3] text-white text-xs tracking-[0.2em] uppercase text-center hover:opacity-90 transition-opacity rounded-lg mb-3"
-                >
-                  Pagar con MercadoPago →
-                </a>
-                <p className="text-xs text-[var(--color-stone)]">
-                  Se abre la app de MercadoPago con la transferencia lista
-                </p>
-              </div>
-            )}
 
             {/* Separador */}
             <div className="flex items-center gap-3 mb-5">
