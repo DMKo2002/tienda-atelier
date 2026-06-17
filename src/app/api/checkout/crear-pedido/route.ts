@@ -140,7 +140,16 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    return NextResponse.json({ ok: true, order, itemsCount: insertedItems?.length ?? 0 })
+    return NextResponse.json({
+      ok: true,
+      order,
+      debug: {
+        itemsCount: insertedItems?.length ?? 0,
+        itemsReceived: items?.length ?? 0,
+        insertedItems,
+        itemsError,
+      }
+    })
 
   } catch (err: any) {
     console.error('Error crear pedido:', err)
