@@ -108,7 +108,6 @@ export async function POST(req: NextRequest) {
     if (items.length > 0) {
       const { error: itemsError } = await supabase.from('order_items').insert(
         items.map((item: any) => ({
-          tenant_id: TENANT_ID,
           order_id: order.id,
           variant_id: item.variantId ?? null,
           product_name: String(item.productName ?? 'Producto'),
@@ -119,9 +118,12 @@ export async function POST(req: NextRequest) {
         }))
       )
       if (itemsError) {
-        console.error('Error insertando order_items:', itemsError)
-        // Devolvemos el pedido de todas formas pero advertimos
-        return NextResponse.json({ ok: true, order, warning: 'Items no guardados: ' + itemsError.message })
+        console.error('Error insertando order_items:', JSON.stringify(itemsError))
+        // Devolvemos error 500 para que sea visible en el checkout
+        return NextResponse.json(
+          { error: 'Error guardando productos del pedido: ' + itemsError.message + ' | code: ' + itemsError.code },
+          { status: 500 }
+        )
       }
     }
 
