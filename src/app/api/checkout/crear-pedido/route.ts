@@ -108,6 +108,7 @@ export async function POST(req: NextRequest) {
     if (items.length > 0) {
       const { error: itemsError } = await supabase.from('order_items').insert(
         items.map((item: any) => ({
+          tenant_id: TENANT_ID,
           order_id: order.id,
           variant_id: item.variantId ?? null,
           product_name: String(item.productName ?? 'Producto'),
