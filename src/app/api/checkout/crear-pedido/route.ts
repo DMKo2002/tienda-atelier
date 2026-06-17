@@ -105,29 +105,42 @@ export async function POST(req: NextRequest) {
     if (orderError) throw orderError
 
     // Crear los items del pedido
-    if (items.length > 0) {
-      const { error: itemsError } = await supabase.from('order_items').insert(
-        items.map((item: any) => ({
-          order_id: order.id,
-          variant_id: item.variantId ?? null,
-          product_name: String(item.productName ?? 'Producto'),
-          variant_desc: item.variantDesc ?? null,
-          quantity: Number(item.quantity) || 1,
-          unit_price: Number(item.price) || 0,
-          price_type: item.priceType ?? 'retail',
-        }))
-      )
-      if (itemsError) {
-        console.error('Error insertando order_items:', JSON.stringify(itemsError))
-        // Devolvemos error 500 para que sea visible en el checkout
-        return NextResponse.json(
-          { error: 'Error guardando productos del pedido: ' + itemsError.message + ' | code: ' + itemsError.code },
-          { status: 500 }
-        )
-      }
+    console.log('DEBUG items recibidos:', JSON.stringify(items))
+    console.log('DEBUG order.id:', order.id)
+
+    if (!items || items.length === 0) {
+      console.error('DEBUG: items array vacío o undefined')
+      return NextResponse.json({ ok: true, order, warning: 'items_vacios' })
     }
 
-    return NextResponse.json({ ok: true, order })
+    const itemsPayload = items.map((item: any) => ({
+      order_id: order.id,
+      variant_id: item.variantId ?? null,
+      product_name: String(item.productName ?? 'Producto'),
+      variant_desc: item.variantDesc ?? null,
+      quantity: Number(item.quantity) || 1,
+      unit_price: Number(item.price) || 0,
+      price_type: item.priceType ?? 'retail',
+    }))
+
+    console.log('DEBUG payload a insertar:', JSON.stringify(itemsPayload))
+
+    const { data: insertedItems, error: itemsError } = await supabase
+      .from('order_items')
+      .insert(itemsPayload)
+      .select()
+
+    console.log('DEBUG insertedItems:', JSON.stringify(insertedItems))
+    console.log('DEBUG itemsError:', JSON.stringify(itemsError))
+
+    if (itemsError) {
+      return NextResponse.json(
+        { error: 'Error items: ' + itemsError.message + ' | code: ' + itemsError.code + ' | details: ' + itemsError.details },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({ ok: true, order, itemsCount: insertedItems?.length ?? 0 })
 
   } catch (err: any) {
     console.error('Error crear pedido:', err)
