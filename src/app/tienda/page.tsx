@@ -22,7 +22,7 @@ export default async function TiendaPage({ searchParams }: Props) {
   const supabase = await createServerSupabase()
 
   const { data: tenant } = await supabase.from('tenants').select('name').eq('id', TENANT_ID).single()
-  const { data: config } = await supabase.from('store_config').select('logo_url, whatsapp_number, notification_email').eq('tenant_id', TENANT_ID).single()
+  const { data: config } = await supabase.from('store_config').select('logo_url, whatsapp_number, notification_email, instagram_url, facebook_url, tiktok_url, pickup_address, branches, pickup_enabled').eq('tenant_id', TENANT_ID).single()
   // Fetch all active categories (top-level + subcategories)
   const { data: allCategories } = await supabase
     .from('categories')
@@ -47,7 +47,7 @@ export default async function TiendaPage({ searchParams }: Props) {
   // Fetch all active products — we'll sort/filter with JS for price and discount
   let query = supabase
     .from('products')
-    .select('id, name, slug, product_images(*), variants(color, size, price_rules(type, price, compare_at_price, active, min_qty))')
+    .select('id, name, slug, category_id, product_images(*), variants(color, size, price_rules(type, price, compare_at_price, active, min_qty))')
     .eq('tenant_id', TENANT_ID)
     .eq('active', true)
 
@@ -136,6 +136,20 @@ export default async function TiendaPage({ searchParams }: Props) {
     )
   )].sort() as string[]
 
+  // Count products per category (before any filter)
+  const productCountByCat: Record<string, number> = {}
+  ;(allProducts ?? []).forEach((p: any) => {
+    if (p.category_id) {
+      productCountByCat[p.category_id] = (productCountByCat[p.category_id] ?? 0) + 1
+    }
+  })
+  // Add counts to category tree
+  const categoriesWithCount = categories.map((c: any) => ({
+    ...c,
+    productCount: (productCountByCat[c.id] ?? 0) + c.subcategories.reduce((acc: number, s: any) => acc + (productCountByCat[s.id] ?? 0), 0),
+    subcategories: c.subcategories.map((s: any) => ({ ...s, productCount: productCountByCat[s.id] ?? 0 })),
+  }))
+
   const storeName = tenant?.name ?? 'TIENDA'
 
   return (
@@ -163,7 +177,7 @@ export default async function TiendaPage({ searchParams }: Props) {
             {/* Sidebar filtros */}
             <aside className="w-full md:w-52 flex-shrink-0">
               <CatalogFilters
-                categories={categories ?? []}
+                categories={categoriesWithCount}
                 availableColors={allColors}
                 maxPrice={0}
                 currentCat={searchParams.cat}
@@ -213,7 +227,16 @@ export default async function TiendaPage({ searchParams }: Props) {
 
       </main>
 
-      <Footer storeName={storeName} whatsapp={config?.whatsapp_number ?? ''} email={config?.notification_email ?? ''} />
+      <Footer
+        storeName={storeName}
+        whatsapp={config?.whatsapp_number ?? ''}
+        email={config?.notification_email ?? ''}
+        instagramUrl={config?.instagram_url ?? undefined}
+        facebookUrl={config?.facebook_url ?? undefined}
+        tiktokUrl={config?.tiktok_url ?? undefined}
+        pickupAddress={(config as any)?.pickup_enabled && config?.pickup_address ? config.pickup_address : undefined}
+        branches={(config as any)?.branches ?? []}
+      />
     </>
   )
 }

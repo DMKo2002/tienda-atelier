@@ -8,12 +8,14 @@ interface Subcategory {
   id: string
   name: string
   slug: string
+  productCount?: number
 }
 
 interface Category {
   id: string
   name: string
   slug: string
+  productCount?: number
   subcategories: Subcategory[]
 }
 
@@ -161,7 +163,7 @@ export default function CatalogFilters({
             <li key={cat.id}>
               <button onClick={() => router.push(buildUrl({ cat: cat.slug }))}
                 className={`text-sm font-light transition-colors ${currentCat === cat.slug ? 'text-[var(--color-charcoal)] border-b border-[var(--color-charcoal)]' : 'text-[var(--color-stone)] hover:text-[var(--color-charcoal)]'}`}>
-                {cat.name}
+                {cat.name}{cat.productCount !== undefined && cat.productCount > 0 && <span className="ml-1.5 text-[10px] text-[var(--color-stone)]/60">({cat.productCount})</span>}
               </button>
               {/* Subcategorías */}
               {cat.subcategories.length > 0 && (
@@ -170,7 +172,7 @@ export default function CatalogFilters({
                     <li key={sub.id}>
                       <button onClick={() => router.push(buildUrl({ cat: sub.slug }))}
                         className={`text-xs font-light transition-colors ${currentCat === sub.slug ? 'text-[var(--color-charcoal)] border-b border-[var(--color-charcoal)]' : 'text-[var(--color-stone)] hover:text-[var(--color-charcoal)]'}`}>
-                        {sub.name}
+                        {sub.name}{sub.productCount !== undefined && sub.productCount > 0 && <span className="ml-1 text-[10px] text-[var(--color-stone)]/60">({sub.productCount})</span>}
                       </button>
                     </li>
                   ))}
