@@ -42,7 +42,7 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     supabase.from('store_config')
-      .select('mp_enabled, transfer_enabled, transfer_cbu, transfer_alias, oca_enabled, andreani_enabled, pickup_enabled, whatsapp_number, min_order_amount')
+      .select('mp_enabled, transfer_enabled, transfer_cbu, transfer_alias, oca_enabled, andreani_enabled, pickup_enabled, whatsapp_number, min_order_amount, custom_shipping')
       .eq('tenant_id', TENANT_ID)
       .single()
       .then(({ data }) => setStoreConfig(data))
@@ -98,7 +98,7 @@ export default function CheckoutPage() {
 
   // Resetear costo si cambia el método de envío
   useEffect(() => {
-    if (shippingMethod !== 'andreani') setShippingCost(0)
+    if (shippingMethod !== 'andreani' && !shippingMethod.startsWith('custom_')) setShippingCost(0)
   }, [shippingMethod])
 
   const totalConEnvio = total + shippingCost
@@ -393,6 +393,22 @@ export default function CheckoutPage() {
                           )}
                         </label>
                       )}
+                      {/* Métodos de envío personalizados */}
+                      {((storeConfig as any)?.custom_shipping ?? [])
+                        .filter((m: any) => m.active && m.name)
+                        .map((m: any, i: number) => {
+                          const val = `custom_${i}`
+                          return (
+                            <label key={i} className={`flex items-center gap-3 p-4 border cursor-pointer transition-colors ${shippingMethod === val ? 'border-[var(--color-charcoal)]' : 'border-[var(--color-border)] hover:border-[var(--color-stone)]'}`}>
+                              <input type="radio" name="shipping" value={val} checked={shippingMethod === val} onChange={() => { setShippingMethod(val); setShippingCost(m.price ?? 0) }} className="accent-[var(--color-charcoal)]" />
+                              <div className="flex-1">
+                                <p className="text-sm font-light text-[var(--color-charcoal)]">{m.name}</p>
+                              </div>
+                              <span className="text-sm font-light text-[var(--color-charcoal)]">{m.price > 0 ? formatPrice(m.price) : 'Gratis'}</span>
+                            </label>
+                          )
+                        })
+                      }
                     </div>
 
                     {/* Error de cotización */}

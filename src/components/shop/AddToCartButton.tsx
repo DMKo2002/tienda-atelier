@@ -13,6 +13,7 @@ interface Variant {
 }
 
 interface AddToCartButtonProps {
+  showPrices?: boolean
   product: {
     id: string
     name: string
@@ -48,12 +49,13 @@ function isLight(hex: string): boolean {
   return (r * 299 + g * 587 + b * 114) / 1000 > 180
 }
 
-export default function AddToCartButton({ product, sizes, colors }: AddToCartButtonProps) {
+export default function AddToCartButton({ product, sizes, colors, showPrices = true }: AddToCartButtonProps) {
   const { addItem } = useCart()
   const [selectedSize, setSelectedSize] = useState<string | null>(sizes[0] ?? null)
   const [selectedColor, setSelectedColor] = useState<string | null>(colors[0] ?? null)
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
+  const [stockError, setStockError] = useState<string | null>(null)
 
   const selectedVariant = product.variants.find(v => {
     const sizeMatch = sizes.length === 0 || v.size === selectedSize
@@ -74,6 +76,12 @@ export default function AddToCartButton({ product, sizes, colors }: AddToCartBut
 
   function handleAddToCart() {
     if (!selectedVariant || !effectivePrice) return
+    const maxStock = selectedVariant.stock ?? 0
+    if (maxStock === 0) return
+    if (quantity > maxStock) {
+      setStockError(maxStock === 1 ? 'Solo queda 1 unidad disponible' : `Solo quedan ${maxStock} unidades disponibles`)
+      return
+    }
     addItem({
       variantId: selectedVariant.id,
       productId: product.id,
@@ -85,8 +93,10 @@ export default function AddToCartButton({ product, sizes, colors }: AddToCartBut
       priceType,
       imageUrl: product.coverUrl,
       quantity,
+      stock: maxStock,
     })
     setAdded(true)
+    setStockError(null)
     setTimeout(() => setAdded(false), 2000)
   }
 
@@ -165,23 +175,34 @@ export default function AddToCartButton({ product, sizes, colors }: AddToCartBut
         <p className="text-xs tracking-[0.15em] uppercase text-[var(--color-stone)] mb-3">Cantidad</p>
         <div className="flex items-center border border-[var(--color-border)] w-fit">
           <button
-            onClick={() => setQuantity(q => Math.max(1, q - 1))}
+            onClick={() => { setQuantity(q => Math.max(1, q - 1)); setStockError(null) }}
             className="w-10 h-10 flex items-center justify-center text-[var(--color-charcoal)] hover:bg-[var(--color-border)] transition-colors"
           >
             −
           </button>
           <span className="w-12 text-center text-sm font-light">{quantity}</span>
           <button
-            onClick={() => setQuantity(q => q + 1)}
+            onClick={() => {
+              const maxStock = selectedVariant?.stock ?? 0
+              if (quantity >= maxStock) {
+                setStockError(maxStock === 1 ? 'Solo queda 1 unidad disponible' : `Solo quedan ${maxStock} unidades disponibles`)
+              } else {
+                setQuantity(q => q + 1)
+                setStockError(null)
+              }
+            }}
             className="w-10 h-10 flex items-center justify-center text-[var(--color-charcoal)] hover:bg-[var(--color-border)] transition-colors"
           >
             +
           </button>
         </div>
+        {stockError && (
+          <p className="mt-2 text-xs text-amber-600">{stockError}</p>
+        )}
       </div>
 
       {/* Banner precio mayorista */}
-      {wholesalePrice && quantity >= wholesalePrice.min_qty && (
+      {showPrices && wholesalePrice && quantity >= wholesalePrice.min_qty && (
         <div className="bg-[#F2EEE9] px-4 py-3 text-sm text-[var(--color-charcoal)]">
           Precio mayorista aplicado: <strong>{formatPrice(wholesalePrice.price)}</strong> por unidad
         </div>
@@ -210,7 +231,7 @@ export default function AddToCartButton({ product, sizes, colors }: AddToCartBut
         ) : (
           <>
             <ShoppingBag size={16} strokeWidth={1.5} />
-            Agregar al carrito — {effectivePrice ? formatPrice(effectivePrice * quantity) : ''}
+            Agregar al carrito{showPrices && effectivePrice ? ` — ${formatPrice(effectivePrice * quantity)}` : ''}
           </>
         )}
       </button>

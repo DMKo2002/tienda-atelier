@@ -9,6 +9,7 @@ interface Subcategory {
   name: string
   slug: string
   productCount?: number
+  subcategories?: Subcategory[]
 }
 
 interface Category {

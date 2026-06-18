@@ -22,7 +22,7 @@ export default async function TiendaPage({ searchParams }: Props) {
   const supabase = await createServerSupabase()
 
   const { data: tenant } = await supabase.from('tenants').select('name').eq('id', TENANT_ID).single()
-  const { data: config } = await supabase.from('store_config').select('logo_url, whatsapp_number, notification_email, instagram_url, facebook_url, tiktok_url, pickup_address, branches, pickup_enabled').eq('tenant_id', TENANT_ID).single()
+  const { data: config } = await supabase.from('store_config').select('logo_url, whatsapp_number, notification_email, instagram_url, facebook_url, tiktok_url, pickup_address, branches, pickup_enabled, price_visibility').eq('tenant_id', TENANT_ID).single()
   // Fetch all active categories (top-level + subcategories)
   const { data: allCategories } = await supabase
     .from('categories')
@@ -31,12 +31,17 @@ export default async function TiendaPage({ searchParams }: Props) {
     .eq('active', true)
     .order('sort_order')
 
-  // Build tree: only top-level categories with their subcategories nested
+  // Build 3-level tree: category -> subcategory -> sub-subcategory
   const categories = (allCategories ?? [])
     .filter((c: any) => !c.parent_id)
     .map((c: any) => ({
       ...c,
-      subcategories: (allCategories ?? []).filter((s: any) => s.parent_id === c.id),
+      subcategories: (allCategories ?? [])
+        .filter((s: any) => s.parent_id === c.id)
+        .map((s: any) => ({
+          ...s,
+          subcategories: (allCategories ?? []).filter((t: any) => t.parent_id === s.id),
+        })),
     }))
 
   // Parse filter params
@@ -55,11 +60,13 @@ export default async function TiendaPage({ searchParams }: Props) {
   if (searchParams.cat) {
     const matchedCat = (allCategories ?? []).find((c: any) => c.slug === searchParams.cat)
     if (matchedCat) {
-      // Find subcategories of this category (if any)
       const subIds = (allCategories ?? [])
         .filter((c: any) => c.parent_id === matchedCat.id)
         .map((c: any) => c.id)
-      const ids = [matchedCat.id, ...subIds]
+      const subSubIds = (allCategories ?? [])
+        .filter((c: any) => subIds.includes(c.parent_id))
+        .map((c: any) => c.id)
+      const ids = [matchedCat.id, ...subIds, ...subSubIds]
       query = ids.length === 1
         ? query.eq('category_id', ids[0])
         : query.in('category_id', ids)
@@ -146,11 +153,37 @@ export default async function TiendaPage({ searchParams }: Props) {
   // Add counts to category tree
   const categoriesWithCount = categories.map((c: any) => ({
     ...c,
-    productCount: (productCountByCat[c.id] ?? 0) + c.subcategories.reduce((acc: number, s: any) => acc + (productCountByCat[s.id] ?? 0), 0),
-    subcategories: c.subcategories.map((s: any) => ({ ...s, productCount: productCountByCat[s.id] ?? 0 })),
+    productCount: (productCountByCat[c.id] ?? 0) +
+      c.subcategories.reduce((acc: number, s: any) =>
+        acc + (productCountByCat[s.id] ?? 0) +
+        (s.subcategories ?? []).reduce((a2: number, t: any) => a2 + (productCountByCat[t.id] ?? 0), 0), 0),
+    subcategories: c.subcategories.map((s: any) => ({
+      ...s,
+      productCount: (productCountByCat[s.id] ?? 0) + (s.subcategories ?? []).reduce((a2: number, t: any) => a2 + (productCountByCat[t.id] ?? 0), 0),
+      subcategories: (s.subcategories ?? []).map((t: any) => ({ ...t, productCount: productCountByCat[t.id] ?? 0 })),
+    })),
   }))
 
   const storeName = tenant?.name ?? 'TIENDA'
+  const priceVisibility = (config as any)?.price_visibility ?? 'all'
+
+  // Check if current user can see prices
+  let showPrices = true
+  if (priceVisibility !== 'all') {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      showPrices = false
+    } else if (priceVisibility === 'wholesale_only') {
+      const { data: customer } = await supabase
+        .from('customers')
+        .select('type')
+        .eq('email', user.email ?? '')
+        .eq('tenant_id', TENANT_ID)
+        .single()
+      showPrices = customer?.type === 'wholesale'
+    }
+    // 'logged_in': user exists → showPrices = true (already set above)
+  }
 
   return (
     <>
@@ -203,6 +236,8 @@ export default async function TiendaPage({ searchParams }: Props) {
                     retailPrice={product.retailPrice}
                     retailCompareAt={product.retailCompareAt}
                     wholesalePrice={product.wholesalePrice}
+                    showPrices={showPrices}
+                    priceVisibility={priceVisibility}
                     colors={product.colors}
                     sizes={product.sizes}
                     index={i}

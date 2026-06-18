@@ -22,7 +22,11 @@ export default async function ProductoPage({ params }: Props) {
   const supabase = await createServerSupabase()
 
   const { data: tenant } = await supabase.from('tenants').select('name').eq('id', TENANT_ID).single()
-  const { data: config } = await supabase.from('store_config').select('logo_url, whatsapp_number, notification_email').eq('tenant_id', TENANT_ID).single()
+  const { data: config } = await supabase
+    .from('store_config')
+    .select('logo_url, whatsapp_number, notification_email, price_visibility')
+    .eq('tenant_id', TENANT_ID)
+    .single()
 
   const { data: product } = await supabase
     .from('products')
@@ -41,9 +45,30 @@ export default async function ProductoPage({ params }: Props) {
   })
   const storeName = tenant?.name ?? 'TIENDA'
 
+  // Price visibility check
+  const priceVisibility = (config as any)?.price_visibility ?? 'all'
+  let showPrices = true
+  if (priceVisibility !== 'all') {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      showPrices = false
+    } else if (priceVisibility === 'wholesale_only') {
+      const { data: customer } = await supabase
+        .from('customers')
+        .select('type')
+        .eq('email', user.email ?? '')
+        .eq('tenant_id', TENANT_ID)
+        .single()
+      showPrices = customer?.type === 'wholesale'
+    }
+  }
+
   // Agrupar variantes por talle y color
   const sizes = [...new Set((product.variants ?? []).map((v: any) => v.size).filter(Boolean))]
   const colors = [...new Set((product.variants ?? []).map((v: any) => v.color).filter(Boolean))]
+
+  const retailRule = product.variants?.[0]?.price_rules?.find((p: any) => p.type === 'retail' && p.active)
+  const wholesaleRule = product.variants?.[0]?.price_rules?.find((p: any) => p.type === 'wholesale' && p.active)
 
   return (
     <>
@@ -69,18 +94,29 @@ export default async function ProductoPage({ params }: Props) {
 
               {/* Precio */}
               <div className="mb-8">
-                {product.variants?.[0]?.price_rules?.find((p: any) => p.type === 'retail' && p.active) && (
-                  <p className="text-2xl font-light text-[var(--color-charcoal)]">
-                    {formatPrice(product.variants[0].price_rules.find((p: any) => p.type === 'retail' && p.active).price)}
-                  </p>
-                )}
-                {product.variants?.[0]?.price_rules?.find((p: any) => p.type === 'wholesale' && p.active) && (
-                  <p className="text-sm text-[var(--color-stone)] mt-1">
-                    Precio mayorista: {formatPrice(product.variants[0].price_rules.find((p: any) => p.type === 'wholesale' && p.active).price)}
-                    <span className="ml-1 text-xs">
-                      (x{product.variants[0].price_rules.find((p: any) => p.type === 'wholesale' && p.active).min_qty}+)
-                    </span>
-                  </p>
+                {showPrices ? (
+                  <>
+                    {retailRule && (
+                      <p className="text-2xl font-light text-[var(--color-charcoal)]">
+                        {formatPrice(retailRule.price)}
+                      </p>
+                    )}
+                    {wholesaleRule && (
+                      <p className="text-sm text-[var(--color-stone)] mt-1">
+                        Precio mayorista: {formatPrice(wholesaleRule.price)}
+                        <span className="ml-1 text-xs">(x{wholesaleRule.min_qty}+)</span>
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <a
+                    href="/cuenta/login"
+                    className="inline-flex items-center gap-1.5 text-sm text-[var(--color-stone)] hover:text-[var(--color-charcoal)] transition-colors underline"
+                  >
+                    {priceVisibility === 'wholesale_only'
+                      ? 'Precio disponible solo para mayoristas'
+                      : 'Iniciá sesión para ver el precio'}
+                  </a>
                 )}
               </div>
 
@@ -97,6 +133,7 @@ export default async function ProductoPage({ params }: Props) {
                 }}
                 sizes={sizes as string[]}
                 colors={colors as string[]}
+                showPrices={showPrices}
               />
 
               {/* Separador */}

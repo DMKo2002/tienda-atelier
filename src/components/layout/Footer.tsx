@@ -201,9 +201,12 @@ export default function Footer({
           <p className="text-[10px] tracking-widest uppercase text-white/30">
             &copy; {new Date().getFullYear()} {storeName}
           </p>
-          <p className="text-[10px] tracking-widest uppercase text-white/30">
-            Desarrollo Web &mdash; CreArt
-          </p>
+          <div className="flex flex-wrap items-center gap-4">
+            <a href="/politica-privacidad" className="text-[10px] tracking-widest uppercase text-white/30 hover:text-white/60 transition-colors">Privacidad</a>
+            <a href="/politica-cookies" className="text-[10px] tracking-widest uppercase text-white/30 hover:text-white/60 transition-colors">Cookies</a>
+            <a href="/terminos-condiciones" className="text-[10px] tracking-widest uppercase text-white/30 hover:text-white/60 transition-colors">Términos</a>
+            <p className="text-[10px] tracking-widest uppercase text-white/30">Desarrollo &mdash; CreArt</p>
+          </div>
         </div>
       </div>
     </footer>

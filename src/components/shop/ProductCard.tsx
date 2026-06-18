@@ -10,6 +10,8 @@ interface ProductCardProps {
   retailCompareAt?: number | null
   wholesalePrice?: number | null
   showWholesale?: boolean
+  showPrices?: boolean
+  priceVisibility?: 'all' | 'logged_in' | 'wholesale_only'
   index?: number
   colors?: string[]
   sizes?: string[]
@@ -43,7 +45,7 @@ function isLight(hex: string): boolean {
 
 export default function ProductCard({
   id, name, slug, coverUrl, retailPrice, retailCompareAt, wholesalePrice,
-  showWholesale = false, index = 0, colors = [], sizes = []
+  showWholesale = false, showPrices = true, priceVisibility = 'all', index = 0, colors = [], sizes = []
 }: ProductCardProps) {
 
   const hasDiscount = retailCompareAt && retailCompareAt > (retailPrice ?? 0)
@@ -83,20 +85,32 @@ export default function ProductCard({
 
         {/* Precio */}
         <div className="flex items-center gap-2 mb-2.5">
-          {retailPrice && (
-            <span className={`text-sm ${hasDiscount ? 'text-[var(--color-charcoal)] font-medium' : 'text-[var(--color-charcoal)]'}`}>
-              {formatPrice(retailPrice)}
-            </span>
-          )}
-          {hasDiscount && (
-            <span className="text-xs text-[var(--color-stone)] line-through">
-              {formatPrice(retailCompareAt!)}
-            </span>
-          )}
-          {showWholesale && wholesalePrice && (
-            <span className="text-xs text-[var(--color-stone)]">
-              Mayor: {formatPrice(wholesalePrice)}
-            </span>
+          {showPrices ? (
+            <>
+              {retailPrice && (
+                <span className={`text-sm ${hasDiscount ? 'text-[var(--color-charcoal)] font-medium' : 'text-[var(--color-charcoal)]'}`}>
+                  {formatPrice(retailPrice)}
+                </span>
+              )}
+              {hasDiscount && (
+                <span className="text-xs text-[var(--color-stone)] line-through">
+                  {formatPrice(retailCompareAt!)}
+                </span>
+              )}
+              {showWholesale && wholesalePrice && (
+                <span className="text-xs text-[var(--color-stone)]">
+                  Mayor: {formatPrice(wholesalePrice)}
+                </span>
+              )}
+            </>
+          ) : (
+            <a
+              href="/cuenta/login"
+              onClick={e => e.stopPropagation()}
+              className="text-xs text-[var(--color-stone)] hover:text-[var(--color-charcoal)] transition-colors underline"
+            >
+              {priceVisibility === 'wholesale_only' ? 'Solo para mayoristas' : 'Iniciá sesión para ver precio'}
+            </a>
           )}
         </div>
 

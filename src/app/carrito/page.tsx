@@ -102,8 +102,13 @@ export default function CarritoPage() {
                           </button>
                           <span className="w-8 text-center text-sm font-light">{item.quantity}</span>
                           <button
-                            onClick={() => updateQuantity(item.variantId, item.quantity + 1)}
-                            className="w-8 h-8 flex items-center justify-center text-[var(--color-charcoal)] hover:bg-[var(--color-border)] transition-colors text-sm"
+                            onClick={() => {
+                              if (item.quantity < (item.stock ?? Infinity)) {
+                                updateQuantity(item.variantId, item.quantity + 1)
+                              }
+                            }}
+                            disabled={item.quantity >= (item.stock ?? Infinity)}
+                            className="w-8 h-8 flex items-center justify-center text-[var(--color-charcoal)] hover:bg-[var(--color-border)] transition-colors text-sm disabled:opacity-30"
                           >
                             +
                           </button>

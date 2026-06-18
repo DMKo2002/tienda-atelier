@@ -13,6 +13,7 @@ export interface CartItem {
   priceType: 'retail' | 'wholesale'
   imageUrl: string | null
   quantity: number
+  stock: number
 }
 
 interface CartContextType {
@@ -49,13 +50,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setItems(prev => {
       const existing = prev.find(i => i.variantId === newItem.variantId)
       if (existing) {
+        const newQty = Math.min(existing.quantity + newItem.quantity, newItem.stock)
         return prev.map(i =>
           i.variantId === newItem.variantId
-            ? { ...i, quantity: i.quantity + newItem.quantity }
+            ? { ...i, quantity: newQty }
             : i
         )
       }
-      return [...prev, newItem]
+      return [...prev, { ...newItem, quantity: Math.min(newItem.quantity, newItem.stock) }]
     })
   }, [])
 
