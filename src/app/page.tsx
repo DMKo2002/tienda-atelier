@@ -36,19 +36,27 @@ export default async function HomePage() {
   const priceVisibility = (config as any)?.price_visibility ?? 'all'
 
   // Check if current user can see prices
-  let showPrices = true
+  let showPrices = priceVisibility === 'all'
   if (priceVisibility !== 'all') {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
+    try {
+      const { data: authData } = await supabase.auth.getUser()
+      const user = authData?.user
+      if (user) {
+        if (priceVisibility === 'logged_in') {
+          showPrices = true
+        } else if (priceVisibility === 'wholesale_only') {
+          const { data: customer } = await supabase
+            .from('customers')
+            .select('type')
+            .eq('email', user.email ?? '')
+            .eq('tenant_id', TENANT_ID)
+            .single()
+          showPrices = customer?.type === 'wholesale'
+        }
+      }
+    } catch (e) {
+      console.warn('[homepage] auth check failed:', e)
       showPrices = false
-    } else if (priceVisibility === 'wholesale_only') {
-      const { data: customer } = await supabase
-        .from('customers')
-        .select('type')
-        .eq('email', user.email ?? '')
-        .eq('tenant_id', TENANT_ID)
-        .single()
-      showPrices = customer?.type === 'wholesale'
     }
   }
 
