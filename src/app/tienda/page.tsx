@@ -1,4 +1,5 @@
 import { Suspense } from 'react'
+import { cookies } from 'next/headers'
 import { createServerSupabase, TENANT_ID } from '@/lib/supabase-server'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
@@ -17,7 +18,6 @@ interface Props {
   }
 }
 
-export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Tienda' }
 
 export default async function TiendaPage({ searchParams }: Props) {
@@ -169,28 +169,38 @@ export default async function TiendaPage({ searchParams }: Props) {
   const storeName = tenant?.name ?? 'TIENDA'
   const priceVisibility = (config as any)?.price_visibility ?? 'all'
 
-  // Check if current user can see prices
+  // Check if current user can see prices — reads cookie directly, no Supabase auth call
   let showPrices = priceVisibility === 'all'
   if (priceVisibility !== 'all') {
-    try {
-      const { data: sessionData } = await supabase.auth.getSession()
-      const user = sessionData?.session?.user
-      if (user) {
-        if (priceVisibility === 'logged_in') {
-          showPrices = true
-        } else if (priceVisibility === 'wholesale_only') {
-          const { data: customer } = await supabase
-            .from('customers')
-            .select('type')
-            .eq('email', user.email ?? '')
-            .eq('tenant_id', TENANT_ID)
-            .single()
-          showPrices = customer?.type === 'wholesale'
+    const cookieStore = cookies()
+    const allCookies = cookieStore.getAll()
+    // Supabase sets sb-{ref}-auth-token when logged in
+    const isLoggedIn = allCookies.some(c => c.name.includes('-auth-token') && c.value.length > 10)
+
+    if (isLoggedIn) {
+      if (priceVisibility === 'logged_in') {
+        showPrices = true
+      } else if (priceVisibility === 'wholesale_only') {
+        // For wholesale check we still need to know the email — read from the JWT cookie
+        try {
+          const tokenCookie = allCookies.find(c => c.name.includes('-auth-token'))
+          if (tokenCookie) {
+            const payload = JSON.parse(Buffer.from(tokenCookie.value.split('.')[1], 'base64').toString())
+            const email = payload?.email ?? ''
+            if (email) {
+              const { data: customer } = await supabase
+                .from('customers')
+                .select('type')
+                .eq('email', email)
+                .eq('tenant_id', TENANT_ID)
+                .single()
+              showPrices = customer?.type === 'wholesale'
+            }
+          }
+        } catch {
+          showPrices = false
         }
       }
-    } catch (e) {
-      console.warn('[tienda] auth check failed:', e)
-      showPrices = false
     }
   }
 

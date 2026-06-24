@@ -5,8 +5,6 @@ import ProductCard from '@/components/shop/ProductCard'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 
-export const dynamic = 'force-dynamic'
-
 export default async function HomePage() {
   const supabase = await createServerSupabase()
 
@@ -19,7 +17,7 @@ export default async function HomePage() {
 
   const { data: config } = await supabase
     .from('store_config')
-    .select('logo_url, hero_image_url, whatsapp_number, notification_email, instagram_url, facebook_url, tiktok_url, pickup_address, pickup_enabled, branches, price_visibility')
+    .select('logo_url, hero_image_url, whatsapp_number, notification_email, instagram_url, facebook_url, tiktok_url, pickup_address, pickup_enabled, branches')
     .eq('tenant_id', TENANT_ID)
     .single()
 
@@ -33,32 +31,6 @@ export default async function HomePage() {
     .limit(4)
 
   const storeName = tenant?.name ?? 'TIENDA'
-  const priceVisibility = (config as any)?.price_visibility ?? 'all'
-
-  // Check if current user can see prices
-  let showPrices = priceVisibility === 'all'
-  if (priceVisibility !== 'all') {
-    try {
-      const { data: sessionData } = await supabase.auth.getSession()
-      const user = sessionData?.session?.user
-      if (user) {
-        if (priceVisibility === 'logged_in') {
-          showPrices = true
-        } else if (priceVisibility === 'wholesale_only') {
-          const { data: customer } = await supabase
-            .from('customers')
-            .select('type')
-            .eq('email', user.email ?? '')
-            .eq('tenant_id', TENANT_ID)
-            .single()
-          showPrices = customer?.type === 'wholesale'
-        }
-      }
-    } catch (e) {
-      console.warn('[homepage] auth check failed:', e)
-      showPrices = false
-    }
-  }
 
   return (
     <>
@@ -150,8 +122,6 @@ export default async function HomePage() {
                   coverUrl={cover?.url}
                   retailPrice={retailPrice}
                   wholesalePrice={wholesalePrice}
-                  showPrices={showPrices}
-                  priceVisibility={priceVisibility}
                   colors={colors}
                   sizes={sizes}
                   index={i}
