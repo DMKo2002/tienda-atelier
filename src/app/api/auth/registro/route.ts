@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabase, TENANT_ID } from '@/lib/supabase-server'
 import { registroLimiter } from '@/lib/ratelimit'
+import { sendEmail, emailBienvenidaCliente } from '@/lib/email'
 
 // ──────────────────────────────────────────────────────────
 //  POST /api/auth/registro
@@ -94,6 +95,16 @@ export async function POST(req: NextRequest) {
       address_street: direccion ?? null,
       active: true,
     })
+
+    // Email de bienvenida (no bloqueante)
+    const storeUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
+    const { data: tenantData } = await supabase.from('tenants').select('name').eq('id', TENANT_ID).single()
+    const storeName = (tenantData as any)?.name ?? 'Tienda'
+    sendEmail({
+      to: email,
+      subject: `Bienvenida a ${storeName}`,
+      html: emailBienvenidaCliente({ storeName, firstName: nombre, storeUrl }),
+    }).catch(() => {})
 
     return NextResponse.json({ ok: true, confirmacion: !authData.session })
     // confirmacion: true → Supabase requiere verificar email antes de poder iniciar sesión
