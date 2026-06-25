@@ -4,6 +4,7 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import ProductCard from '@/components/shop/ProductCard'
 import CatalogFilters from '@/components/shop/CatalogFilters'
+import MobileFilterDrawer from '@/components/shop/MobileFilterDrawer'
 
 interface Props {
   searchParams: {
@@ -218,8 +219,8 @@ export default async function TiendaPage({ searchParams }: Props) {
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex flex-col md:flex-row gap-12">
 
-            {/* Sidebar filtros */}
-            <aside className="w-full md:w-52 flex-shrink-0">
+            {/* Sidebar filtros — solo desktop */}
+            <aside className="hidden md:block w-52 flex-shrink-0">
               <CatalogFilters
                 categories={categoriesWithCount}
                 availableColors={allColors}
@@ -236,6 +237,19 @@ export default async function TiendaPage({ searchParams }: Props) {
 
             {/* Grid productos */}
             <div className="flex-1">
+              {/* Botón filtrar — solo mobile */}
+              <MobileFilterDrawer
+                categories={categoriesWithCount}
+                availableColors={allColors}
+                currentCat={searchParams.cat}
+                currentOrden={searchParams.orden}
+                currentQ={searchParams.q}
+                currentColor={searchParams.color}
+                currentPrecioMin={precioMin}
+                currentPrecioMax={precioMax}
+                currentDescuento={soloDescuento}
+                activeFilterCount={[searchParams.cat, searchParams.color, searchParams.precio_min, searchParams.precio_max, searchParams.descuento, searchParams.q].filter(Boolean).length}
+              />
               <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-12">
                 {products.map((product: any, i: number) => (
                   <ProductCard

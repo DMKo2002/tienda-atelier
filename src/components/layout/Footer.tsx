@@ -153,11 +153,11 @@ export default function Footer({
 
         </div>
 
-        <div className="mt-16 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="mt-16 pt-8 border-t border-white/10 flex flex-col items-center gap-3 md:flex-row md:justify-between md:gap-4">
           <p className="text-[10px] tracking-widest uppercase text-white/30">
             &copy; {new Date().getFullYear()} {storeName}
           </p>
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-2">
             <a href="/politica-privacidad" className="text-[10px] tracking-widest uppercase text-white/30 hover:text-white/60 transition-colors">Privacidad</a>
             <a href="/politica-cookies" className="text-[10px] tracking-widest uppercase text-white/30 hover:text-white/60 transition-colors">Cookies</a>
             <a href="/terminos-condiciones" className="text-[10px] tracking-widest uppercase text-white/30 hover:text-white/60 transition-colors">Términos</a>
