@@ -22,7 +22,7 @@ export default async function HomePage() {
 
   const { data: config } = await supabase
     .from('store_config')
-    .select('logo_url, hero_image_url, hero_eyebrow, hero_title_line1, hero_title_italic, hero_title_line3, hero_season, whatsapp_number, notification_email, instagram_url, facebook_url, tiktok_url, pickup_address, pickup_enabled, branches, price_visibility')
+    .select('logo_url, hero_image_url, hero_eyebrow, hero_title_line1, hero_title_italic, hero_title_line3, hero_season, hero_text_color, whatsapp_number, notification_email, instagram_url, facebook_url, tiktok_url, pickup_address, pickup_enabled, branches, price_visibility')
     .eq('tenant_id', TENANT_ID)
     .single()
 
@@ -69,24 +69,42 @@ export default async function HomePage() {
           )}
 
           {/* Texto hero */}
-          <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
-            <div className="max-w-xl opacity-0 animate-fade-up delay-100">
-              <p className={`text-xs tracking-[0.25em] uppercase mb-4 ${config?.hero_image_url ? 'text-white/70' : 'text-[var(--color-stone)]'}`}>
-                {(config as any)?.hero_eyebrow ?? 'Nueva temporada'}
-              </p>
-              <h1 className={`font-display text-6xl md:text-8xl font-light leading-none mb-8 ${config?.hero_image_url ? 'text-white' : 'text-[var(--color-charcoal)]'}`}>
-                {(config as any)?.hero_title_line1 ?? 'Estilo que'}<br />
-                <em className="italic">{(config as any)?.hero_title_italic ?? 'trasciende'}</em><br />
-                {(config as any)?.hero_title_line3 ?? 'tendencia'}
-              </h1>
-              <Link
-                href="/tienda"
-                className={`inline-flex items-center gap-3 text-xs tracking-[0.2em] uppercase border-b pb-1 transition-colors ${config?.hero_image_url ? 'border-white/70 text-white hover:border-white hover:text-white/80' : 'border-[var(--color-charcoal)] text-[var(--color-charcoal)] hover:text-[var(--color-stone)] hover:border-[var(--color-stone)]'}`}
-              >
-                Ver colección <ArrowRight size={14} />
-              </Link>
-            </div>
-          </div>
+          {(() => {
+            const customColor = (config as any)?.hero_text_color
+            const textStyle = customColor ? { color: customColor } : undefined
+            const defaultEyebrowClass = config?.hero_image_url ? 'text-white/70' : 'text-[var(--color-stone)]'
+            const defaultTitleClass   = config?.hero_image_url ? 'text-white'    : 'text-[var(--color-charcoal)]'
+            const defaultLinkClass    = config?.hero_image_url
+              ? 'border-white/70 text-white hover:border-white hover:text-white/80'
+              : 'border-[var(--color-charcoal)] text-[var(--color-charcoal)] hover:text-[var(--color-stone)] hover:border-[var(--color-stone)]'
+            return (
+              <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
+                <div className="max-w-xl opacity-0 animate-fade-up delay-100">
+                  <p
+                    className={`text-xs tracking-[0.25em] uppercase mb-4 ${!customColor ? defaultEyebrowClass : ''}`}
+                    style={textStyle ? { color: customColor + 'B3' } : undefined}
+                  >
+                    {(config as any)?.hero_eyebrow ?? 'Nueva temporada'}
+                  </p>
+                  <h1
+                    className={`font-display text-6xl md:text-8xl font-light leading-none mb-8 ${!customColor ? defaultTitleClass : ''}`}
+                    style={textStyle}
+                  >
+                    {(config as any)?.hero_title_line1 ?? 'Estilo que'}<br />
+                    <em className="italic">{(config as any)?.hero_title_italic ?? 'trasciende'}</em><br />
+                    {(config as any)?.hero_title_line3 ?? 'tendencia'}
+                  </h1>
+                  <Link
+                    href="/tienda"
+                    className={`inline-flex items-center gap-3 text-xs tracking-[0.2em] uppercase border-b pb-1 transition-colors ${!customColor ? defaultLinkClass : ''}`}
+                    style={textStyle}
+                  >
+                    Ver colección <ArrowRight size={14} />
+                  </Link>
+                </div>
+              </div>
+            )
+          })()}
 
           {/* Número decorativo */}
           <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-0 animate-fade-in delay-400 hidden lg:block">
