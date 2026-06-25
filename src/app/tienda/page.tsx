@@ -21,6 +21,10 @@ interface Props {
 export const metadata = { title: 'Tienda' }
 
 export default async function TiendaPage({ searchParams }: Props) {
+  // Read cookies synchronously BEFORE any await (cookies() loses context after await in Next.js 14)
+  const cookieStore = cookies()
+  const isLoggedIn = cookieStore.getAll().some(c => c.name.includes('-auth-token') && c.value.length > 10)
+
   const supabase = await createServerSupabase()
 
   const { data: tenant } = await supabase.from('tenants').select('name').eq('id', TENANT_ID).single()
@@ -169,37 +173,26 @@ export default async function TiendaPage({ searchParams }: Props) {
   const storeName = tenant?.name ?? 'TIENDA'
   const priceVisibility = (config as any)?.price_visibility ?? 'all'
 
-  // Check if current user can see prices — reads cookie directly, no Supabase auth call
+  // Price visibility using isLoggedIn computed at top (before any await)
   let showPrices = priceVisibility === 'all'
   if (priceVisibility !== 'all') {
-    const cookieStore = cookies()
-    const allCookies = cookieStore.getAll()
-    // Supabase sets sb-{ref}-auth-token when logged in
-    const isLoggedIn = allCookies.some(c => c.name.includes('-auth-token') && c.value.length > 10)
-
     if (isLoggedIn) {
-      if (priceVisibility === 'logged_in') {
-        showPrices = true
-      } else if (priceVisibility === 'wholesale_only') {
-        // For wholesale check we still need to know the email — read from the JWT cookie
+      showPrices = priceVisibility === 'logged_in' ? true : false
+      if (priceVisibility === 'wholesale_only') {
         try {
-          const tokenCookie = allCookies.find(c => c.name.includes('-auth-token'))
+          const tokenCookie = cookieStore.getAll().find(c => c.name.includes('-auth-token'))
           if (tokenCookie) {
-            const payload = JSON.parse(Buffer.from(tokenCookie.value.split('.')[1], 'base64').toString())
-            const email = payload?.email ?? ''
-            if (email) {
-              const { data: customer } = await supabase
-                .from('customers')
-                .select('type')
-                .eq('email', email)
-                .eq('tenant_id', TENANT_ID)
-                .single()
-              showPrices = customer?.type === 'wholesale'
+            const parts = tokenCookie.value.split('.')
+            if (parts.length >= 2) {
+              const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString())
+              const email = payload?.email ?? ''
+              if (email) {
+                const { data: cust } = await supabase.from('customers').select('type').eq('email', email).eq('tenant_id', TENANT_ID).single()
+                showPrices = cust?.type === 'wholesale'
+              }
             }
           }
-        } catch {
-          showPrices = false
-        }
+        } catch { showPrices = false }
       }
     }
   }
