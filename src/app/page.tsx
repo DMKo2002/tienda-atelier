@@ -191,17 +191,13 @@ export default async function HomePage() {
             ].map((item, i) => (
               <div
                 key={i}
-                className="aspect-square flex items-end p-4 opacity-0 animate-fade-up"
+                className="aspect-square opacity-0 animate-fade-up"
                 style={{
                   backgroundColor: item.bg,
                   animationDelay: `${i * 100}ms`,
                   animationFillMode: 'forwards'
                 }}
-              >
-                <p className="text-xs tracking-[0.15em] uppercase text-[var(--color-charcoal)]/60">
-                  {item.label}
-                       </p>
-              </div>
+              />
             ))}
           </div>
         </section>
