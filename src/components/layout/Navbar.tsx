@@ -78,7 +78,7 @@ export default function Navbar({ storeName = 'TIENDA', logoUrl }: NavbarProps) {
           {/* Logo centrado */}
           <Link href="/" className="absolute left-1/2 -translate-x-1/2">
             {logoUrl ? (
-              <img src={logoUrl} alt={storeName} className="h-8 object-contain" />
+              <img src={logoUrl} alt={storeName} className="h-8 max-w-[80px] object-contain" />
             ) : (
               <span className="font-display text-xl font-light tracking-[0.2em] uppercase text-[var(--color-charcoal)]">
                 {storeName}

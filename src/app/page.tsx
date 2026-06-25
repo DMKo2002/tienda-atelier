@@ -22,9 +22,18 @@ export default async function HomePage() {
 
   const { data: config } = await supabase
     .from('store_config')
-    .select('logo_url, hero_image_url, whatsapp_number, notification_email, instagram_url, facebook_url, tiktok_url, pickup_address, pickup_enabled, branches, price_visibility')
+    .select('logo_url, hero_image_url, hero_eyebrow, hero_title_line1, hero_title_italic, hero_title_line3, hero_season, whatsapp_number, notification_email, instagram_url, facebook_url, tiktok_url, pickup_address, pickup_enabled, branches, price_visibility')
     .eq('tenant_id', TENANT_ID)
     .single()
+
+  // Imágenes configurables desde panel Personalización
+  const { data: assetsRows } = await supabase
+    .from('store_assets')
+    .select('slot, url')
+    .eq('tenant_id', TENANT_ID)
+
+  const asset = (slot: string): string | null =>
+    assetsRows?.find(a => a.slot === slot)?.url ?? null
 
   // Productos destacados (últimos 4)
   const { data: products } = await supabase
@@ -63,12 +72,12 @@ export default async function HomePage() {
           <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
             <div className="max-w-xl opacity-0 animate-fade-up delay-100">
               <p className={`text-xs tracking-[0.25em] uppercase mb-4 ${config?.hero_image_url ? 'text-white/70' : 'text-[var(--color-stone)]'}`}>
-                Nueva temporada
+                {(config as any)?.hero_eyebrow ?? 'Nueva temporada'}
               </p>
               <h1 className={`font-display text-6xl md:text-8xl font-light leading-none mb-8 ${config?.hero_image_url ? 'text-white' : 'text-[var(--color-charcoal)]'}`}>
-                Estilo que<br />
-                <em className="italic">trasciende</em><br />
-                tendencia
+                {(config as any)?.hero_title_line1 ?? 'Estilo que'}<br />
+                <em className="italic">{(config as any)?.hero_title_italic ?? 'trasciende'}</em><br />
+                {(config as any)?.hero_title_line3 ?? 'tendencia'}
               </h1>
               <Link
                 href="/tienda"
@@ -82,7 +91,7 @@ export default async function HomePage() {
           {/* Número decorativo */}
           <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-0 animate-fade-in delay-400 hidden lg:block">
             <p className="font-display text-[200px] font-light text-[var(--color-charcoal)]/5 leading-none select-none">
-              AW
+              {(config as any)?.hero_season ?? 'AW'}
             </p>
           </div>
 
@@ -183,22 +192,28 @@ export default async function HomePage() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {[
-              { label: 'Mood & Concept', bg: '#DDD5C8' },
-              { label: 'Nuestra Tienda', bg: '#C8CDD5' },
-              { label: 'AW2026', bg: '#C8D5CC' },
-              { label: 'Sketch', bg: '#D5C8CE' },
-            ].map((item, i) => (
-              <div
-                key={i}
-                className="aspect-square opacity-0 animate-fade-up"
-                style={{
-                  backgroundColor: item.bg,
-                  animationDelay: `${i * 100}ms`,
-                  animationFillMode: 'forwards'
-                }}
-              />
-            ))}
+            {['#DDD5C8', '#C8CDD5', '#C8D5CC', '#D5C8CE'].map((bg, i) => {
+              const imgUrl = asset(`moodboard_${i + 1}`)
+              return (
+                <div
+                  key={i}
+                  className="aspect-square overflow-hidden opacity-0 animate-fade-up relative"
+                  style={{
+                    backgroundColor: bg,
+                    animationDelay: `${i * 100}ms`,
+                    animationFillMode: 'forwards'
+                  }}
+                >
+                  {imgUrl && (
+                    <img
+                      src={imgUrl}
+                      alt={`Mood ${i + 1}`}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  )}
+                </div>
+              )
+            })}
           </div>
         </section>
 
