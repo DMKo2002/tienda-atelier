@@ -1,227 +1,139 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useEffect, useRef } from 'react'
-import { ShoppingBag, Menu, X, Search, User } from 'lucide-react'
+import { useState } from 'react'
+import { ShoppingBag, Menu, X } from 'lucide-react'
 import { useCart } from '@/components/shop/CartContext'
 
 interface NavbarProps {
   storeName?: string
   logoUrl?: string | null
+  instagramUrl?: string | null
+  facebookUrl?: string | null
 }
 
-interface Leaf { id: string; name: string; slug: string }
-interface Sub extends Leaf { subcategories: Leaf[] }
-interface Category extends Leaf { subcategories: Sub[] }
+function IconInstagram() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+    </svg>
+  )
+}
 
-export default function Navbar({ storeName = 'TIENDA', logoUrl }: NavbarProps) {
-  const [scrolled, setScrolled] = useState(false)
+function IconFacebook() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+    </svg>
+  )
+}
+
+const NAV_LINKS = [
+  { href: '/', label: 'Home' },
+  { href: '/tienda', label: 'Shop' },
+  { href: '/contacto', label: 'Contacto' },
+]
+
+export default function Navbar({ storeName = 'ATELIER', logoUrl, instagramUrl, facebookUrl }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false)
-  const [categories, setCategories] = useState<Category[]>([])
-  const [megaOpen, setMegaOpen] = useState(false)
-  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const { count } = useCart()
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40)
-    window.addEventListener('scroll', onScroll)
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
-  useEffect(() => {
-    fetch('/api/nav-categories').then(r => r.json()).then(setCategories).catch(() => {})
-  }, [])
-
-  function open() {
-    if (closeTimer.current) clearTimeout(closeTimer.current)
-    setMegaOpen(true)
-  }
-
-  function close() {
-    closeTimer.current = setTimeout(() => setMegaOpen(false), 120)
-  }
-
-  function cancelClose() {
-    if (closeTimer.current) clearTimeout(closeTimer.current)
-  }
-
-  const headerHeight = scrolled ? 'top-[52px]' : 'top-[72px]'
 
   return (
     <>
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled ? 'bg-[var(--color-warm-white)] border-b border-[var(--color-border)] py-3' : 'bg-transparent py-6'
-      }`}>
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-transparent">
+        <div className="w-full px-6 h-16 flex items-center">
 
-          {/* Nav links */}
-          <nav className="hidden md:flex items-center gap-8">
-            <Link href="/" className="text-xs tracking-[0.15em] uppercase text-[var(--color-charcoal)] hover:text-[var(--color-stone)] transition-colors">
-              Home
-            </Link>
-
-            {/* Tienda trigger */}
-            <div onMouseEnter={open} onMouseLeave={close}>
-              <Link
-                href="/tienda"
-                className={`text-xs tracking-[0.15em] uppercase transition-colors ${megaOpen ? 'text-[var(--color-stone)]' : 'text-[var(--color-charcoal)] hover:text-[var(--color-stone)]'}`}
-              >
-                Tienda
-              </Link>
-            </div>
-
-            <Link href="/contacto" className="text-xs tracking-[0.15em] uppercase text-[var(--color-charcoal)] hover:text-[var(--color-stone)] transition-colors">
-              Contacto
-            </Link>
-          </nav>
-
-          {/* Logo centrado */}
-          <Link href="/" className="absolute left-1/2 -translate-x-1/2">
+          {/* Logo — extremo izquierdo */}
+          <Link href="/" className="flex-shrink-0 mr-10">
             {logoUrl ? (
-              <img src={logoUrl} alt={storeName} className="h-8 max-w-[160px] object-contain" />
+              <img src={logoUrl} alt={storeName} className="h-7 max-w-[160px] object-contain" />
             ) : (
-              <span className="font-display text-xl font-light tracking-[0.2em] uppercase text-[var(--color-charcoal)]">
+              <span className="text-base font-bold tracking-tight text-white">
                 {storeName}
               </span>
             )}
           </Link>
 
-          {/* Iconos derecha */}
-          <div className="hidden md:flex items-center gap-6">
-            <button className="text-[var(--color-charcoal)] hover:text-[var(--color-stone)] transition-colors">
-              <Search size={18} strokeWidth={1.5} />
-            </button>
-            <Link href="/cuenta" className="text-[var(--color-charcoal)] hover:text-[var(--color-stone)] transition-colors" title="Mi cuenta">
-              <User size={18} strokeWidth={1.5} />
-            </Link>
-            <Link href="/carrito" className="relative text-[var(--color-charcoal)] hover:text-[var(--color-stone)] transition-colors">
-              <ShoppingBag size={20} strokeWidth={1.5} />
+          {/* Nav links */}
+          <nav className="hidden md:flex items-center gap-8 flex-1">
+            {NAV_LINKS.map(link => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-xs font-medium tracking-[0.12em] text-white hover:text-[var(--color-accent)] transition-colors relative group"
+              >
+                {link.label}
+                <span className="absolute -bottom-0.5 left-0 right-0 h-px bg-[var(--color-accent)] scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+              </Link>
+            ))}
+          </nav>
+
+          {/* Redes + carrito */}
+          <div className="hidden md:flex items-center gap-5 flex-shrink-0">
+            {instagramUrl && (
+              <a
+                href={instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white hover:text-[var(--color-accent)] transition-colors"
+                aria-label="Instagram"
+              >
+                <IconInstagram />
+              </a>
+            )}
+            {facebookUrl && (
+              <a
+                href={facebookUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white hover:text-[var(--color-accent)] transition-colors"
+                aria-label="Facebook"
+              >
+                <IconFacebook />
+              </a>
+            )}
+            <Link href="/carrito" className="relative text-white hover:text-[var(--color-accent)] transition-colors">
+              <ShoppingBag size={18} strokeWidth={1.5} />
               {count > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-[var(--color-charcoal)] text-white text-[9px] rounded-full flex items-center justify-center">
+                <span className="absolute -top-2 -right-2 w-4 h-4 bg-[var(--color-accent)] text-white text-[9px] rounded-full flex items-center justify-center font-medium">
                   {count}
                 </span>
               )}
             </Link>
           </div>
 
-          {/* Mobile hamburger */}
+          {/* Mobile */}
           <div className="md:hidden flex items-center gap-4 ml-auto">
-            <Link href="/carrito" className="relative">
+            <Link href="/carrito" className="relative text-white">
               <ShoppingBag size={20} strokeWidth={1.5} />
               {count > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-[var(--color-charcoal)] text-white text-[9px] rounded-full flex items-center justify-center">
+                <span className="absolute -top-2 -right-2 w-4 h-4 bg-[var(--color-accent)] text-white text-[9px] rounded-full flex items-center justify-center">
                   {count}
                 </span>
               )}
             </Link>
-            <button onClick={() => setMenuOpen(!menuOpen)}>
+            <button onClick={() => setMenuOpen(!menuOpen)} className="text-white">
               {menuOpen ? <X size={22} strokeWidth={1.5} /> : <Menu size={22} strokeWidth={1.5} />}
             </button>
           </div>
         </div>
       </header>
 
-      {/* ── MEGA MENU ── full width panel */}
-      {categories.length > 0 && (
-        <div
-          className={`fixed left-0 right-0 z-40 hidden md:block transition-all duration-300 ease-in-out ${headerHeight} ${
-            megaOpen
-              ? 'opacity-100 translate-y-0 pointer-events-auto'
-              : 'opacity-0 -translate-y-2 pointer-events-none'
-          }`}
-          style={{ backgroundColor: '#e5e7eb' }}
-          onMouseEnter={cancelClose}
-          onMouseLeave={close}
-        >
-          <div className="max-w-7xl mx-auto px-6 py-10">
-            <div className="flex gap-12">
-              {/* "Ver todo" como primer columna */}
-              <div className="flex flex-col gap-2 min-w-[120px]">
-                <Link
-                  href="/tienda"
-                  onClick={() => setMegaOpen(false)}
-                  className="text-[11px] font-semibold tracking-[0.18em] uppercase text-[var(--color-charcoal)] mb-3 hover:text-[var(--color-stone)] transition-colors"
-                >
-                  Ver todo
-                </Link>
-              </div>
-
-              {/* Una columna por categoría madre */}
-              {categories.map(cat => (
-                <div key={cat.id} className="flex flex-col min-w-[140px]">
-                  <Link
-                    href={`/tienda?cat=${cat.slug}`}
-                    onClick={() => setMegaOpen(false)}
-                    className="text-[11px] font-semibold tracking-[0.18em] uppercase text-[var(--color-charcoal)] mb-3 hover:text-[var(--color-stone)] transition-colors"
-                  >
-                    {cat.name}
-                  </Link>
-                  {cat.subcategories.length > 0 && (
-                    <ul className="flex flex-col gap-2">
-                      {cat.subcategories.map(sub => (
-                        <li key={sub.id}>
-                          <Link
-                            href={`/tienda?cat=${sub.slug}`}
-                            onClick={() => setMegaOpen(false)}
-                            className="text-xs tracking-[0.08em] text-zinc-600 hover:text-[var(--color-charcoal)] transition-colors"
-                          >
-                            {sub.name}
-                          </Link>
-                          {sub.subcategories.length > 0 && (
-                            <ul className="mt-1 ml-2 flex flex-col gap-1">
-                              {sub.subcategories.map(leaf => (
-                                <li key={leaf.id}>
-                                  <Link
-                                    href={`/tienda?cat=${leaf.slug}`}
-                                    onClick={() => setMegaOpen(false)}
-                                    className="text-[11px] tracking-[0.06em] text-zinc-400 hover:text-zinc-700 transition-colors"
-                                  >
-                                    {leaf.name}
-                                  </Link>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Mobile fullscreen menu */}
+      {/* Mobile menu */}
       {menuOpen && (
-        <div className="fixed inset-0 z-40 bg-[var(--color-warm-white)] flex flex-col items-center justify-center gap-8 md:hidden overflow-y-auto py-20">
-          <Link href="/" onClick={() => setMenuOpen(false)}
-            className="font-display text-3xl font-light tracking-widest uppercase text-[var(--color-charcoal)]">
-            Home
-          </Link>
-          <Link href="/tienda" onClick={() => setMenuOpen(false)}
-            className="font-display text-3xl font-light tracking-widest uppercase text-[var(--color-charcoal)]">
-            Tienda
-          </Link>
-          {categories.length > 0 && (
-            <div className="flex flex-col items-center gap-3 -mt-4">
-              {categories.map(cat => (
-                <Link key={cat.id} href={`/tienda?cat=${cat.slug}`} onClick={() => setMenuOpen(false)}
-                  className="text-sm tracking-[0.15em] uppercase text-[var(--color-stone)]">
-                  {cat.name}
-                </Link>
-              ))}
-            </div>
-          )}
-          <Link href="/contacto" onClick={() => setMenuOpen(false)}
-            className="font-display text-3xl font-light tracking-widest uppercase text-[var(--color-charcoal)]">
-            Contacto
-          </Link>
-          <Link href="/cuenta" onClick={() => setMenuOpen(false)}
-            className="font-display text-3xl font-light tracking-widest uppercase text-[var(--color-charcoal)]">
-            Mi cuenta
-          </Link>
+        <div className="fixed inset-0 z-40 bg-white flex flex-col items-center justify-center gap-8 md:hidden">
+          {NAV_LINKS.map(link => (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={() => setMenuOpen(false)}
+              className="text-2xl font-bold tracking-widest uppercase text-[var(--color-black)] hover:text-[var(--color-accent)] transition-colors"
+            >
+              {link.label}
+            </Link>
+          ))}
         </div>
       )}
     </>

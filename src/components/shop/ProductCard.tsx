@@ -1,7 +1,4 @@
-'use client'
-
 import Link from 'next/link'
-import Image from 'next/image'
 import { ImageOff } from 'lucide-react'
 
 interface ProductCardProps {
@@ -23,7 +20,6 @@ interface ProductCardProps {
 const formatPrice = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n)
 
-// Mapa de nombres de color en español → hex
 const COLOR_MAP: Record<string, string> = {
   negro: '#1C1C1C', blanco: '#F5F5F0', crema: '#F0EBE1', beige: '#D4C5A9',
   marfil: '#FFFFF0', gris: '#9E9E9E', 'gris claro': '#D0D0D0', 'gris oscuro': '#555555',
@@ -65,49 +61,47 @@ export default function ProductCard({
       {/* Imagen */}
       <div className="product-img-wrap bg-[#F2EEE9] aspect-[3/4] w-full mb-3 relative overflow-hidden">
         {coverUrl ? (
-          <Image
-            src={coverUrl.split('?')[0]}
-            alt={name}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 50vw, 25vw"
-          />
+          <img src={coverUrl} alt={name} className="w-full h-full object-cover" loading="lazy" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <ImageOff size={32} className="text-[var(--color-border)]" />
           </div>
         )}
 
-        {/* Badge descuento */}
-        {discountPct && (
-          <div className="absolute top-2 left-2 bg-[var(--color-charcoal)] text-white text-[10px] tracking-[0.1em] uppercase px-2 py-1">
-            -{discountPct}%
+        {/* Badge nuevo / descuento */}
+        {discountPct ? (
+          <div className="absolute top-2 left-2 bg-[var(--color-accent)] text-white text-[10px] font-bold tracking-[0.08em] uppercase px-2 py-1">
+            SALE
+          </div>
+        ) : (
+          <div className="absolute top-2 left-2 bg-[var(--color-black)] text-white text-[10px] font-bold tracking-[0.08em] uppercase px-2 py-1">
+            NEW
           </div>
         )}
       </div>
 
-      {/* Info */}
-      <div>
-        <p className="text-sm font-light text-[var(--color-charcoal)] leading-snug group-hover:text-[var(--color-stone)] transition-colors mb-1.5">
+      {/* Info — centrado */}
+      <div className="text-center">
+        <p className="text-sm text-[var(--color-black)] leading-snug group-hover:text-[var(--color-accent)] transition-colors mb-1.5">
           {name}
         </p>
 
         {/* Precio */}
-        <div className="flex items-center gap-2 mb-2.5">
+        <div className="flex items-center justify-center gap-2 mb-2.5">
           {showPrices ? (
             <>
               {retailPrice && (
-                <span className={`text-sm ${hasDiscount ? 'text-[var(--color-charcoal)] font-medium' : 'text-[var(--color-charcoal)]'}`}>
+                <span className="text-sm text-[var(--color-black)]">
                   {formatPrice(retailPrice)}
                 </span>
               )}
               {hasDiscount && (
-                <span className="text-xs text-[var(--color-stone)] line-through">
+                <span className="text-xs text-[var(--color-gray)] line-through">
                   {formatPrice(retailCompareAt!)}
                 </span>
               )}
               {showWholesale && wholesalePrice && (
-                <span className="text-xs text-[var(--color-stone)]">
+                <span className="text-xs text-[var(--color-gray)]">
                   Mayor: {formatPrice(wholesalePrice)}
                 </span>
               )}
@@ -116,7 +110,7 @@ export default function ProductCard({
             <a
               href="/cuenta/login"
               onClick={e => e.stopPropagation()}
-              className="text-xs text-[var(--color-stone)] hover:text-[var(--color-charcoal)] transition-colors underline"
+              className="text-xs text-[var(--color-gray)] hover:text-[var(--color-black)] transition-colors underline"
             >
               {priceVisibility === 'wholesale_only' ? 'Solo para mayoristas' : 'Iniciá sesión para ver precio'}
             </a>
@@ -125,7 +119,7 @@ export default function ProductCard({
 
         {/* Colores */}
         {colors.length > 0 && (
-          <div className="flex gap-1.5 flex-wrap mb-2">
+          <div className="flex gap-1.5 flex-wrap justify-center mb-2">
             {colors.map(color => {
               const hex = getColorHex(color)
               const light = isLight(hex)
@@ -146,12 +140,12 @@ export default function ProductCard({
 
         {/* Talles */}
         {sizes.length > 0 && (
-          <div className="flex gap-1 flex-wrap">
+          <div className="flex gap-1 flex-wrap justify-center">
             {sizes.map(size => (
               <span
                 key={size}
                 style={{
-                  fontSize: 10, letterSpacing: '0.05em', color: 'var(--color-stone)',
+                  fontSize: 10, letterSpacing: '0.05em', color: 'var(--color-gray)',
                   border: '1px solid var(--color-border)', borderRadius: 3,
                   padding: '1px 5px', lineHeight: 1.6,
                 }}
@@ -162,6 +156,6 @@ export default function ProductCard({
           </div>
         )}
       </div>
-        </Link>
+    </Link>
   )
 }
