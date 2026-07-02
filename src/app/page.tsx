@@ -162,7 +162,7 @@ export default async function HomePage() {
                 {heroEyebrow}
               </p>
               <h1
-                className="text-5xl md:text-6xl font-extrabold leading-tight mb-5"
+                className="text-5xl md:text-6xl font-bold leading-tight mb-5"
                 style={customColor ? { color: customColor } : { color: '#ffffff' }}
               >
                 {heroLine1}<br />
@@ -179,7 +179,7 @@ export default async function HomePage() {
               <div className="flex items-center gap-4 justify-end">
                 <Link
                   href="/tienda"
-                  className="inline-block bg-[var(--color-accent)] text-white text-xs tracking-[0.15em] uppercase px-6 py-3 hover:bg-[#c96a28] transition-colors"
+                  className="inline-block bg-[var(--color-black)] text-white text-xs tracking-[0.15em] uppercase px-6 py-3 hover:bg-[#333333] transition-colors"
                 >
                   Ver colección
                 </Link>
@@ -196,7 +196,7 @@ export default async function HomePage() {
 
           {/* Zona derecha 19% */}
           <div className="absolute right-0 top-0 bottom-0 flex items-center justify-center bg-[#F0EFEC]" style={{ width: '19%' }}>
-            <p className="text-[#1A1A1A]/10 font-extrabold text-4xl tracking-[0.3em] uppercase -rotate-90 whitespace-nowrap select-none">
+            <p className="text-[#1A1A1A]/10 font-bold text-4xl tracking-[0.3em] uppercase -rotate-90 whitespace-nowrap select-none">
               {heroSeason}
             </p>
           </div>
@@ -242,7 +242,7 @@ export default async function HomePage() {
                   )}
                   <div className="absolute inset-0 bg-black/5 group-hover:bg-black/20 transition-colors" />
                   <div className="absolute bottom-0 left-0 right-0 p-6">
-                    <h2 className={`text-2xl font-extrabold mb-1 ${colImg ? 'text-white' : 'text-[var(--color-black)]'}`}>
+                    <h2 className={`text-2xl font-bold mb-1 ${colImg ? 'text-white' : 'text-[var(--color-black)]'}`}>
                       {col.name}
                     </h2>
                     <p className={`text-xs mb-4 leading-relaxed ${colImg ? 'text-white/70' : 'text-[var(--color-gray)]'}`}>
@@ -262,7 +262,7 @@ export default async function HomePage() {
         <section className="max-w-7xl mx-auto px-6 pb-24">
           <div className="flex items-start justify-between mb-10">
             <div>
-              <h2 className="text-4xl font-extrabold text-[var(--color-black)] mb-2">Featured product</h2>
+              <h2 className="text-4xl font-bold text-[var(--color-black)] mb-2">Featured product</h2>
               <p className="text-sm text-[var(--color-accent)] max-w-md">
                 Las últimas incorporaciones a nuestra colección, seleccionadas especialmente para vos.
               </p>
@@ -323,7 +323,7 @@ export default async function HomePage() {
         {/* ── BLOG ─────────────────────────────────────────────── */}
         <section className="max-w-7xl mx-auto px-6 pb-24">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-extrabold text-[var(--color-black)] mb-3">Fashion news &amp; tips</h2>
+            <h2 className="text-4xl font-bold text-[var(--color-black)] mb-3">Fashion news &amp; tips</h2>
             <p className="text-sm text-[var(--color-accent)]">
               Todo sobre moda, tendencias y cuidado de prendas
             </p>
@@ -364,7 +364,7 @@ export default async function HomePage() {
             style={{ backgroundImage: 'radial-gradient(ellipse at 20% 50%, #E07B39 0%, transparent 60%), radial-gradient(ellipse at 80% 50%, #555 0%, transparent 60%)' }}
           />
           <div className="relative max-w-xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-3">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
               Recibí las últimas novedades
             </h2>
             <p className="text-sm text-white/60 mb-8">
@@ -376,7 +376,7 @@ export default async function HomePage() {
                 placeholder="Tu dirección de email..."
                 className="flex-1 bg-white text-[var(--color-black)] text-sm px-5 py-4 outline-none placeholder:text-[var(--color-gray)]"
               />
-              <button className="bg-[var(--color-accent)] text-white text-xs font-bold tracking-[0.15em] uppercase px-8 py-4 hover:bg-[#c96a28] transition-colors whitespace-nowrap">
+              <button className="bg-[var(--color-black)] text-white text-xs font-bold tracking-[0.15em] uppercase px-8 py-4 hover:bg-[#333333] transition-colors whitespace-nowrap">
                 SUSCRIBIRSE
               </button>
             </div>
