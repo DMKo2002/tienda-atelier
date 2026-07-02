@@ -52,7 +52,7 @@ export default async function HomePage() {
 
   const { data: config } = await supabase
     .from('store_config')
-    .select('logo_url, hero_image_url, hero_eyebrow, hero_title_line1, hero_title_italic, hero_title_line3, hero_season, hero_text_color, nav_text_color, collection_text_color, whatsapp_number, notification_email, instagram_url, facebook_url, tiktok_url, pickup_address, pickup_enabled, branches, price_visibility')
+    .select('logo_url, hero_image_url, hero_eyebrow, hero_title_line1, hero_title_italic, hero_title_line3, hero_subtitle, hero_season, hero_text_color, nav_text_color, collection_text_color, whatsapp_number, notification_email, instagram_url, facebook_url, tiktok_url, pickup_address, pickup_enabled, branches, price_visibility')
     .eq('tenant_id', TENANT_ID())
     .single()
 
@@ -98,6 +98,7 @@ export default async function HomePage() {
   const heroLegacyLine3 = (config as any)?.hero_title_line3 ?? ''
   const heroItalic  = heroLegacyLine3 ? `${heroItalicBase} ${heroLegacyLine3}`.trim() : heroItalicBase
   const heroSeason  = (config as any)?.hero_season ?? 'AW'
+  const heroSubtitle = (config as any)?.hero_subtitle ?? 'Piezas únicas diseñadas para\nquienes buscan estilo y distinción.'
   const customColor = (config as any)?.hero_text_color
   const heroImgUrl  = asset('hero_main') ?? config?.hero_image_url ?? null
   // Color de texto de Colecciones: editable por tenant. Si no se configuró,
@@ -153,11 +154,10 @@ export default async function HomePage() {
                 {heroItalic}
               </h1>
               <p
-                className="text-sm mb-7 font-light leading-relaxed"
+                className="text-sm mb-7 font-light leading-relaxed whitespace-pre-line"
                 style={customColor ? { color: customColor + 'CC' } : { color: 'rgba(26,26,26,0.8)' }}
               >
-                Piezas únicas diseñadas para<br />
-                quienes buscan estilo y distinción.
+                {heroSubtitle}
               </p>
               <div className="flex items-center gap-4 flex-wrap justify-center md:justify-start">
                 <Link
