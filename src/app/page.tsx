@@ -16,22 +16,19 @@ const COLLECTION_PALETTES = [
   { bg: '#D8E8DE', text: '#1A1A1A' },
 ]
 
-const BLOG_POSTS = [
+const BLOG_DEFAULTS = [
   {
     title: 'Tendencias de temporada',
-    date: new Date().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }),
     excerpt: 'Descubrí las piezas clave que definen la moda de esta temporada y cómo combinarlas para crear looks únicos.',
     bg: '#E8E4DC',
   },
   {
     title: 'Guía de talles y ajuste',
-    date: new Date().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }),
     excerpt: 'Todo lo que necesitás saber para elegir el talle perfecto y conseguir el ajuste ideal en cada prenda.',
     bg: '#D8DDE8',
   },
   {
     title: 'Cuidado de prendas',
-    date: new Date().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }),
     excerpt: 'Consejos esenciales para mantener tus prendas favoritas en perfecto estado temporada tras temporada.',
     bg: '#D8E8D8',
   },
@@ -52,7 +49,7 @@ export default async function HomePage() {
 
   const { data: config } = await supabase
     .from('store_config')
-    .select('logo_url, hero_image_url, hero_eyebrow, hero_title_line1, hero_title_italic, hero_title_line3, hero_subtitle, hero_season, hero_text_color, nav_text_color, collection_text_color, whatsapp_number, notification_email, instagram_url, facebook_url, tiktok_url, pickup_address, pickup_enabled, branches, price_visibility')
+    .select('logo_url, hero_image_url, hero_eyebrow, hero_title_line1, hero_title_italic, hero_title_line3, hero_subtitle, hero_season, hero_text_color, nav_text_color, collection_text_color, blog_heading, blog_subheading, blog_posts, whatsapp_number, notification_email, instagram_url, facebook_url, tiktok_url, pickup_address, pickup_enabled, branches, price_visibility')
     .eq('tenant_id', TENANT_ID())
     .single()
 
@@ -104,6 +101,18 @@ export default async function HomePage() {
   // Color de texto de Colecciones: editable por tenant. Si no se configuró,
   // mantiene el comportamiento anterior (blanco sobre imagen, negro sin imagen).
   const collectionTextColor = (config as any)?.collection_text_color || null
+
+  // Blog: título/bajada de la sección + título y texto de cada nota, editables en el panel.
+  const blogHeading = (config as any)?.blog_heading || 'Fashion news & tips'
+  const blogSubheading = (config as any)?.blog_subheading || 'Todo sobre moda, tendencias y cuidado de prendas'
+  const rawBlogPosts = (config as any)?.blog_posts
+  const today = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  const blogPosts = BLOG_DEFAULTS.map((def, i) => ({
+    title: rawBlogPosts?.[i]?.title || def.title,
+    excerpt: rawBlogPosts?.[i]?.excerpt || def.excerpt,
+    bg: def.bg,
+    date: today,
+  }))
 
   return (
     <>
@@ -312,14 +321,14 @@ export default async function HomePage() {
         {/* ── BLOG ─────────────────────────────────────────────── */}
         <section className="max-w-7xl mx-auto px-6 pb-24">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-[var(--color-black)] mb-3">Fashion news &amp; tips</h2>
+            <h2 className="text-4xl font-bold text-[var(--color-black)] mb-3">{blogHeading}</h2>
             <p className="text-sm text-[var(--color-accent)]">
-              Todo sobre moda, tendencias y cuidado de prendas
+              {blogSubheading}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {BLOG_POSTS.map((post, i) => {
+            {blogPosts.map((post, i) => {
               const blogImg = asset(`blog_${i + 1}`)
               return (
                 <article key={i} className="group cursor-pointer">
