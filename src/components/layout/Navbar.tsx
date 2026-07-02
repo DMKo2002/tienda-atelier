@@ -64,8 +64,7 @@ export default function Navbar({ storeName = 'ATELIER', logoUrl, instagramUrl, f
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-transparent">
-        {/* Fila principal — reserva ~19% a la derecha, ahí termina la imagen del hero */}
-        <div className="w-full pl-6 pr-[calc(6%+19%)] h-16 flex items-center">
+        <div className="w-full px-6 h-16 flex items-center">
 
           {/* Logo — extremo izquierdo */}
           <Link href="/" className="flex-shrink-0 mr-10">
@@ -93,8 +92,26 @@ export default function Navbar({ storeName = 'ATELIER', logoUrl, instagramUrl, f
             ))}
           </nav>
 
-          {/* Usuario + carrito — íconos simples, sin fondo */}
+          {/* Redes + usuario + carrito — mismo cluster, íconos simples sin fondo */}
           <div className="hidden md:flex items-center gap-4 flex-shrink-0">
+            {instagramUrl && (
+              <a href={instagramUrl} target="_blank" rel="noopener noreferrer"
+                className="hover:text-[var(--color-accent)] transition-colors" style={{ color }} aria-label="Instagram">
+                <IconInstagram />
+              </a>
+            )}
+            {facebookUrl && (
+              <a href={facebookUrl} target="_blank" rel="noopener noreferrer"
+                className="hover:text-[var(--color-accent)] transition-colors" style={{ color }} aria-label="Facebook">
+                <IconFacebook />
+              </a>
+            )}
+            {tiktokUrl && (
+              <a href={tiktokUrl} target="_blank" rel="noopener noreferrer"
+                className="hover:text-[var(--color-accent)] transition-colors" style={{ color }} aria-label="TikTok">
+                <IconTikTok />
+              </a>
+            )}
             <Link href="/cuenta" className="hover:text-[var(--color-accent)] transition-colors" style={{ color }} aria-label="Cuenta">
               <User size={18} strokeWidth={1.5} />
             </Link>
@@ -122,29 +139,6 @@ export default function Navbar({ storeName = 'ATELIER', logoUrl, instagramUrl, f
               {menuOpen ? <X size={22} strokeWidth={1.5} /> : <Menu size={22} strokeWidth={1.5} />}
             </button>
           </div>
-        </div>
-
-        {/* Redes sociales — esquina superior derecha, sobre la franja clara.
-            Color fijo negro: esa franja siempre es clara, no depende de la foto del hero. */}
-        <div className="hidden md:flex items-center gap-4 absolute top-6 right-6">
-          {instagramUrl && (
-            <a href={instagramUrl} target="_blank" rel="noopener noreferrer"
-              className="text-[#1A1A1A] hover:text-[var(--color-accent)] transition-colors" aria-label="Instagram">
-              <IconInstagram />
-            </a>
-          )}
-          {facebookUrl && (
-            <a href={facebookUrl} target="_blank" rel="noopener noreferrer"
-              className="text-[#1A1A1A] hover:text-[var(--color-accent)] transition-colors" aria-label="Facebook">
-              <IconFacebook />
-            </a>
-          )}
-          {tiktokUrl && (
-            <a href={tiktokUrl} target="_blank" rel="noopener noreferrer"
-              className="text-[#1A1A1A] hover:text-[var(--color-accent)] transition-colors" aria-label="TikTok">
-              <IconTikTok />
-            </a>
-          )}
         </div>
       </header>
 
