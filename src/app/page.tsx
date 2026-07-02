@@ -51,7 +51,7 @@ export default async function HomePage() {
 
   const { data: config } = await supabase
     .from('store_config')
-    .select('logo_url, hero_image_url, hero_eyebrow, hero_title_line1, hero_title_italic, hero_title_line3, hero_season, hero_text_color, whatsapp_number, notification_email, instagram_url, facebook_url, tiktok_url, pickup_address, pickup_enabled, branches, price_visibility')
+    .select('logo_url, hero_image_url, hero_eyebrow, hero_title_line1, hero_title_italic, hero_title_line3, hero_season, hero_text_color, nav_text_color, collection_text_color, whatsapp_number, notification_email, instagram_url, facebook_url, tiktok_url, pickup_address, pickup_enabled, branches, price_visibility')
     .eq('tenant_id', TENANT_ID())
     .single()
 
@@ -99,6 +99,9 @@ export default async function HomePage() {
   const heroSeason  = (config as any)?.hero_season ?? 'AW'
   const customColor = (config as any)?.hero_text_color
   const heroImgUrl  = asset('hero_main') ?? config?.hero_image_url ?? null
+  // Color de texto de Colecciones: editable por tenant. Si no se configuró,
+  // mantiene el comportamiento anterior (blanco sobre imagen, negro sin imagen).
+  const collectionTextColor = (config as any)?.collection_text_color || null
 
   return (
     <>
@@ -107,6 +110,8 @@ export default async function HomePage() {
         logoUrl={config?.logo_url}
         instagramUrl={(config as any)?.instagram_url ?? undefined}
         facebookUrl={(config as any)?.facebook_url ?? undefined}
+        tiktokUrl={(config as any)?.tiktok_url ?? undefined}
+        textColor={(config as any)?.nav_text_color ?? undefined}
       />
 
       <main>
@@ -157,7 +162,7 @@ export default async function HomePage() {
             </div>
 
             {/* Texto hero */}
-            <div className="absolute right-10 top-1/2 -translate-y-1/2 max-w-md text-right z-10">
+            <div className="absolute right-10 top-1/2 -translate-y-1/2 max-w-2xl w-[46%] text-right z-10">
               <p
                 className="text-xs tracking-[0.25em] uppercase mb-4"
                 style={customColor ? { color: customColor + 'B3' } : { color: 'rgba(255,255,255,0.7)' }}
@@ -165,7 +170,7 @@ export default async function HomePage() {
                 {heroEyebrow}
               </p>
               <h1
-                className="text-5xl md:text-6xl font-normal leading-tight mb-5"
+                className="text-4xl md:text-5xl font-normal leading-tight mb-5 whitespace-nowrap"
                 style={customColor ? { color: customColor } : { color: '#ffffff' }}
               >
                 {heroLine1}<br />
@@ -228,6 +233,9 @@ export default async function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {collections.map((col, i) => {
               const colImg = asset(`collection_${i + 1}`)
+              // Si el tenant eligió un color, se respeta siempre (con o sin imagen).
+              // Si no, se mantiene el comportamiento anterior por defecto.
+              const baseColor = collectionTextColor ?? (colImg ? '#ffffff' : '#1A1A1A')
               return (
                 <Link
                   key={i}
@@ -244,13 +252,16 @@ export default async function HomePage() {
                   )}
                   <div className="absolute inset-0 bg-black/5 group-hover:bg-black/20 transition-colors" />
                   <div className="absolute bottom-0 left-0 right-0 p-6">
-                    <h2 className={`text-2xl font-bold mb-1 ${colImg ? 'text-white' : 'text-[var(--color-black)]'}`}>
+                    <h2 className="text-2xl font-bold mb-1" style={{ color: baseColor }}>
                       {col.name}
                     </h2>
-                    <p className={`text-xs mb-4 leading-relaxed ${colImg ? 'text-white/70' : 'text-[var(--color-gray)]'}`}>
+                    <p className="text-xs mb-4 leading-relaxed" style={{ color: baseColor + 'B3' }}>
                       Piezas seleccionadas para esta temporada.
                     </p>
-                    <span className={`text-xs font-bold tracking-[0.15em] uppercase border-b-2 pb-0.5 group-hover:text-[var(--color-accent)] group-hover:border-[var(--color-accent)] transition-colors ${colImg ? 'text-white border-white' : 'text-[var(--color-black)] border-[var(--color-black)]'}`}>
+                    <span
+                      className="text-xs font-bold tracking-[0.15em] uppercase border-b-2 pb-0.5 group-hover:text-[var(--color-accent)] group-hover:border-[var(--color-accent)] transition-colors"
+                      style={{ color: baseColor, borderColor: baseColor }}
+                    >
                       DISCOVER MORE
                     </span>
                   </div>

@@ -10,6 +10,10 @@ interface NavbarProps {
   logoUrl?: string | null
   instagramUrl?: string | null
   facebookUrl?: string | null
+  tiktokUrl?: string | null
+  /** Color del texto/íconos del menú. Editable por tenant para que se lea bien
+   *  sobre cualquier imagen de fondo del hero. Acepta 'white' | 'black' | un hex. */
+  textColor?: string | null
 }
 
 function IconInstagram() {
@@ -30,15 +34,32 @@ function IconFacebook() {
   )
 }
 
+function IconTikTok() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.93a8.16 8.16 0 0 0 4.78 1.52V7.01a4.85 4.85 0 0 1-1.01-.32z"/>
+    </svg>
+  )
+}
+
 const NAV_LINKS = [
   { href: '/', label: 'Home' },
   { href: '/tienda', label: 'Shop' },
   { href: '/contacto', label: 'Contacto' },
 ]
 
-export default function Navbar({ storeName = 'ATELIER', logoUrl, instagramUrl, facebookUrl }: NavbarProps) {
+// Normaliza atajos comunes a un color CSS válido
+function resolveColor(color?: string | null): string {
+  if (!color) return '#ffffff'
+  if (color === 'white') return '#ffffff'
+  if (color === 'black') return '#1A1A1A'
+  return color
+}
+
+export default function Navbar({ storeName = 'ATELIER', logoUrl, instagramUrl, facebookUrl, tiktokUrl, textColor }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const { count } = useCart()
+  const color = resolveColor(textColor)
 
   return (
     <>
@@ -48,9 +69,9 @@ export default function Navbar({ storeName = 'ATELIER', logoUrl, instagramUrl, f
           {/* Logo — extremo izquierdo */}
           <Link href="/" className="flex-shrink-0 mr-10">
             {logoUrl ? (
-              <img src={logoUrl} alt={storeName} className="h-7 max-w-[160px] object-contain" />
+              <img src={logoUrl} alt={storeName} className="h-[14px] max-w-[80px] object-contain" />
             ) : (
-              <span className="text-base font-bold tracking-tight text-white">
+              <span className="text-base font-bold tracking-tight" style={{ color }}>
                 {storeName}
               </span>
             )}
@@ -62,7 +83,8 @@ export default function Navbar({ storeName = 'ATELIER', logoUrl, instagramUrl, f
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-xs font-medium tracking-[0.12em] text-white hover:text-[var(--color-accent)] transition-colors relative group"
+                className="text-xs font-medium tracking-[0.12em] hover:text-[var(--color-accent)] transition-colors relative group"
+                style={{ color }}
               >
                 {link.label}
                 <span className="absolute -bottom-0.5 left-0 right-0 h-px bg-[var(--color-accent)] scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
@@ -77,7 +99,8 @@ export default function Navbar({ storeName = 'ATELIER', logoUrl, instagramUrl, f
                 href={instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-[var(--color-accent)] transition-colors"
+                className="hover:text-[var(--color-accent)] transition-colors"
+                style={{ color }}
                 aria-label="Instagram"
               >
                 <IconInstagram />
@@ -88,13 +111,26 @@ export default function Navbar({ storeName = 'ATELIER', logoUrl, instagramUrl, f
                 href={facebookUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-[var(--color-accent)] transition-colors"
+                className="hover:text-[var(--color-accent)] transition-colors"
+                style={{ color }}
                 aria-label="Facebook"
               >
                 <IconFacebook />
               </a>
             )}
-            <Link href="/carrito" className="relative text-white hover:text-[var(--color-accent)] transition-colors">
+            {tiktokUrl && (
+              <a
+                href={tiktokUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-[var(--color-accent)] transition-colors"
+                style={{ color }}
+                aria-label="TikTok"
+              >
+                <IconTikTok />
+              </a>
+            )}
+            <Link href="/carrito" className="relative hover:text-[var(--color-accent)] transition-colors" style={{ color }}>
               <ShoppingBag size={18} strokeWidth={1.5} />
               {count > 0 && (
                 <span className="absolute -top-2 -right-2 w-4 h-4 bg-[var(--color-accent)] text-white text-[9px] rounded-full flex items-center justify-center font-medium">
@@ -106,7 +142,7 @@ export default function Navbar({ storeName = 'ATELIER', logoUrl, instagramUrl, f
 
           {/* Mobile */}
           <div className="md:hidden flex items-center gap-4 ml-auto">
-            <Link href="/carrito" className="relative text-white">
+            <Link href="/carrito" className="relative" style={{ color }}>
               <ShoppingBag size={20} strokeWidth={1.5} />
               {count > 0 && (
                 <span className="absolute -top-2 -right-2 w-4 h-4 bg-[var(--color-accent)] text-white text-[9px] rounded-full flex items-center justify-center">
@@ -114,14 +150,14 @@ export default function Navbar({ storeName = 'ATELIER', logoUrl, instagramUrl, f
                 </span>
               )}
             </Link>
-            <button onClick={() => setMenuOpen(!menuOpen)} className="text-white">
+            <button onClick={() => setMenuOpen(!menuOpen)} style={{ color }}>
               {menuOpen ? <X size={22} strokeWidth={1.5} /> : <Menu size={22} strokeWidth={1.5} />}
             </button>
           </div>
         </div>
       </header>
 
-      {/* Mobile menu */}
+      {/* Mobile menu — siempre sobre fondo blanco, texto negro fijo */}
       {menuOpen && (
         <div className="fixed inset-0 z-40 bg-white flex flex-col items-center justify-center gap-8 md:hidden">
           {NAV_LINKS.map(link => (
