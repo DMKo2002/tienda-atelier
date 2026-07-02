@@ -125,7 +125,7 @@ export default async function HomePage() {
               <img
                 src={heroImgUrl}
                 alt="Hero"
-                className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover/hero:scale-[1.03]"
+                className="w-full h-full object-cover transition-transform duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/hero:scale-[1.08]"
               />
             ) : (
               <div className="w-full h-full bg-[#E0D8CE]" />
@@ -137,14 +137,14 @@ export default async function HomePage() {
             <div className="absolute bottom-10 left-8 flex gap-3 z-10">
               <div className="overflow-hidden group/t1 cursor-pointer" style={{ width: '18.5vw', height: 'calc(18.5vw * 1.3125)' }}>
                 {asset('hero_thumb_1') ? (
-                  <img src={asset('hero_thumb_1')!} alt="" className="w-full h-full object-cover transition-transform duration-500 group-hover/t1:scale-105" />
+                  <img src={asset('hero_thumb_1')!} alt="" className="w-full h-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/t1:scale-110" />
                 ) : (
                   <div className="w-full h-full bg-[#8B7355]" />
                 )}
               </div>
               <div className="overflow-hidden group/t2 cursor-pointer" style={{ width: '18.5vw', height: 'calc(18.5vw * 1.3125)' }}>
                 {asset('hero_thumb_2') ? (
-                  <img src={asset('hero_thumb_2')!} alt="" className="w-full h-full object-cover transition-transform duration-500 group-hover/t2:scale-105" />
+                  <img src={asset('hero_thumb_2')!} alt="" className="w-full h-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/t2:scale-110" />
                 ) : (
                   <div className="w-full h-full bg-[#7B3535]" />
                 )}
