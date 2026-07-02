@@ -8,49 +8,50 @@ interface HeroThumbnailsProps {
   thumb2: string | null
 }
 
+const THUMB_W = '18.5vw'
+const THUMB_H = 'calc(18.5vw * 1.3125)'
+const GAP = '12px' // gap-3
+const OFFSET = `calc(${THUMB_W} + ${GAP})`
+
 export default function HeroThumbnails({ thumb1, thumb2 }: HeroThumbnailsProps) {
   const [swapped, setSwapped] = useState(false)
-  const [pulsing, setPulsing] = useState(false)
-
-  const leftImg = swapped ? thumb2 : thumb1
-  const rightImg = swapped ? thumb1 : thumb2
 
   function swap() {
-    if (pulsing) return
-    setPulsing(true)
-    setTimeout(() => setSwapped(s => !s), 250)
-    setTimeout(() => setPulsing(false), 550)
+    setSwapped(s => !s)
   }
 
   return (
     <>
-      {/* Thumbnails — abajo izquierda */}
-      <div className="absolute bottom-10 left-8 flex gap-3 z-10">
-        <div className="overflow-hidden group/t1 cursor-pointer" style={{ width: '18.5vw', height: 'calc(18.5vw * 1.3125)' }} onClick={swap}>
-          {leftImg ? (
-            <img
-              src={leftImg}
-              alt=""
-              className={`w-full h-full object-cover transition-all duration-[550ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/t1:scale-[1.12] ${pulsing ? 'scale-90 opacity-60' : 'scale-100 opacity-100'}`}
-            />
+      {/* Thumbnails — se deslizan horizontalmente y cruzan de lugar entre sí */}
+      <div
+        className="absolute bottom-10 left-8 z-10"
+        style={{ width: `calc(${THUMB_W} * 2 + ${GAP})`, height: THUMB_H }}
+      >
+        <div
+          className="absolute top-0 left-0 overflow-hidden cursor-pointer transition-transform duration-[1500ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+          style={{ width: THUMB_W, height: THUMB_H, transform: swapped ? `translateX(${OFFSET})` : 'translateX(0)' }}
+          onClick={swap}
+        >
+          {thumb1 ? (
+            <img src={thumb1} alt="" className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full bg-[#8B7355]" />
           )}
         </div>
-        <div className="overflow-hidden group/t2 cursor-pointer" style={{ width: '18.5vw', height: 'calc(18.5vw * 1.3125)' }} onClick={swap}>
-          {rightImg ? (
-            <img
-              src={rightImg}
-              alt=""
-              className={`w-full h-full object-cover transition-all duration-[550ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/t2:scale-[1.12] ${pulsing ? 'scale-90 opacity-60' : 'scale-100 opacity-100'}`}
-            />
+        <div
+          className="absolute top-0 overflow-hidden cursor-pointer transition-transform duration-[1500ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+          style={{ width: THUMB_W, height: THUMB_H, left: OFFSET, transform: swapped ? `translateX(calc(-1 * ${OFFSET}))` : 'translateX(0)' }}
+          onClick={swap}
+        >
+          {thumb2 ? (
+            <img src={thumb2} alt="" className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full bg-[#7B3535]" />
           )}
         </div>
       </div>
 
-      {/* Flechas — intercambian las dos fotos entre sí */}
+      {/* Flechas — disparan el mismo cruce (solo hay 2 fotos, así que ambas hacen lo mismo) */}
       <div className="absolute bottom-3 left-8 z-10 flex gap-2">
         <button
           onClick={swap}
