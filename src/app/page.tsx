@@ -162,28 +162,28 @@ export default async function HomePage() {
             </div>
 
             {/* Texto hero */}
-            <div className="absolute right-10 top-1/2 -translate-y-1/2 max-w-2xl w-[46%] text-right z-10">
+            <div className="absolute left-[64%] top-1/2 -translate-y-1/2 max-w-xl text-left z-10">
               <p
                 className="text-xs tracking-[0.25em] uppercase mb-4"
-                style={customColor ? { color: customColor + 'B3' } : { color: 'rgba(255,255,255,0.7)' }}
+                style={customColor ? { color: customColor + 'B3' } : { color: 'rgba(26,26,26,0.7)' }}
               >
                 {heroEyebrow}
               </p>
               <h1
-                className="text-4xl md:text-5xl font-normal leading-tight mb-5 whitespace-nowrap"
-                style={customColor ? { color: customColor } : { color: '#ffffff' }}
+                className="text-6xl md:text-7xl font-bold leading-tight mb-5 whitespace-nowrap"
+                style={customColor ? { color: customColor } : { color: '#1A1A1A' }}
               >
                 {heroLine1}<br />
-                <span className="italic">{heroItalic}</span>
+                {heroItalic}
               </h1>
               <p
                 className="text-sm mb-7 font-light leading-relaxed"
-                style={customColor ? { color: customColor + 'CC' } : { color: 'rgba(255,255,255,0.8)' }}
+                style={customColor ? { color: customColor + 'CC' } : { color: 'rgba(26,26,26,0.8)' }}
               >
                 Piezas únicas diseñadas para<br />
                 quienes buscan estilo y distinción.
               </p>
-              <div className="flex items-center gap-4 justify-end">
+              <div className="flex items-center gap-4 justify-start">
                 <Link
                   href="/tienda"
                   className="inline-block bg-[var(--color-black)] text-white text-xs tracking-[0.15em] uppercase px-6 py-3 hover:bg-[#333333] transition-colors"
@@ -193,7 +193,7 @@ export default async function HomePage() {
                 <Link
                   href="/tienda"
                   className="text-xs tracking-[0.15em] uppercase border-b pb-0.5 hover:opacity-70 transition-opacity"
-                  style={customColor ? { color: customColor, borderColor: customColor + '99' } : { color: '#ffffff', borderColor: 'rgba(255,255,255,0.6)' }}
+                  style={customColor ? { color: customColor, borderColor: customColor + '99' } : { color: '#1A1A1A', borderColor: 'rgba(26,26,26,0.6)' }}
                 >
                   Tienda
                 </Link>
