@@ -119,8 +119,8 @@ export default async function HomePage() {
         {/* ── HERO ─────────────────────────────────────────────── */}
         <section className="relative w-full bg-[#F0EFEC] overflow-hidden" style={{ height: '100vh' }}>
 
-          {/* Imagen principal — 81% ancho */}
-          <div className="absolute left-0 top-0 bottom-0 overflow-hidden group/hero" style={{ width: '81%' }}>
+          {/* Imagen principal — 100% en mobile, 81% en desktop */}
+          <div className="absolute left-0 top-0 bottom-0 w-full md:w-[81%] overflow-hidden group/hero">
             {heroImgUrl ? (
               <img
                 src={heroImgUrl}
@@ -161,8 +161,8 @@ export default async function HomePage() {
               </button>
             </div>
 
-            {/* Texto hero */}
-            <div className="absolute left-[64%] top-1/2 -translate-y-1/2 max-w-xl text-left z-10">
+            {/* Texto hero — centrado en mobile, alineado a la izquierda desde md */}
+            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 px-6 text-center md:inset-x-auto md:left-[64%] md:px-0 md:max-w-xl md:text-left z-10">
               <p
                 className="text-xs tracking-[0.25em] uppercase mb-4"
                 style={customColor ? { color: customColor + 'B3' } : { color: 'rgba(26,26,26,0.7)' }}
@@ -170,7 +170,7 @@ export default async function HomePage() {
                 {heroEyebrow}
               </p>
               <h1
-                className="text-6xl md:text-7xl font-bold leading-tight mb-5 whitespace-nowrap"
+                className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight mb-5 md:whitespace-nowrap"
                 style={customColor ? { color: customColor } : { color: '#1A1A1A' }}
               >
                 {heroLine1}<br />
@@ -183,7 +183,7 @@ export default async function HomePage() {
                 Piezas únicas diseñadas para<br />
                 quienes buscan estilo y distinción.
               </p>
-              <div className="flex items-center gap-4 justify-start">
+              <div className="flex items-center gap-4 flex-wrap justify-center md:justify-start">
                 <Link
                   href="/tienda"
                   className="inline-block bg-[var(--color-black)] text-white text-xs tracking-[0.15em] uppercase px-6 py-3 hover:bg-[#333333] transition-colors"
@@ -201,8 +201,8 @@ export default async function HomePage() {
             </div>
           </div>
 
-          {/* Zona derecha 19% */}
-          <div className="absolute right-0 top-0 bottom-0 flex items-center justify-center bg-[#F0EFEC]" style={{ width: '19%' }}>
+          {/* Zona derecha 19% — solo en desktop, en mobile no hay espacio para ella */}
+          <div className="hidden md:flex absolute right-0 top-0 bottom-0 items-center justify-center bg-[#F0EFEC] w-[19%]">
             <p className="text-[#1A1A1A]/10 font-bold text-4xl tracking-[0.3em] uppercase -rotate-90 whitespace-nowrap select-none">
               {heroSeason}
             </p>
