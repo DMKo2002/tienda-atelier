@@ -216,7 +216,7 @@ export default async function HomePage() {
                 <Link
                   key={i}
                   href={`/tienda?categoria=${col.slug}`}
-                  className="group relative overflow-hidden aspect-[4/5] block"
+                  className={`group relative overflow-hidden aspect-[4/5] block ${i === 1 ? 'md:translate-y-3' : ''}`}
                   style={{ backgroundColor: col.palette.bg }}
                 >
                   {colImg && (
