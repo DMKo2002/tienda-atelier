@@ -91,8 +91,11 @@ export default async function HomePage() {
 
   const heroEyebrow = (config as any)?.hero_eyebrow ?? 'Fashion Exclusive Collection'
   const heroLine1   = (config as any)?.hero_title_line1 ?? 'Nueva'
-  const heroItalic  = (config as any)?.hero_title_italic ?? 'Temporada'
-  const heroLine3   = (config as any)?.hero_title_line3 ?? ((config as any)?.hero_season ?? '2026')
+  // Renglón 2 (itálica) — compat: si el tenant todavía tiene el viejo campo
+  // "línea 3" sin fusionar en el panel, lo sumamos acá para no perder el texto.
+  const heroItalicBase = (config as any)?.hero_title_italic ?? 'Temporada'
+  const heroLegacyLine3 = (config as any)?.hero_title_line3 ?? ''
+  const heroItalic  = heroLegacyLine3 ? `${heroItalicBase} ${heroLegacyLine3}`.trim() : heroItalicBase
   const heroSeason  = (config as any)?.hero_season ?? 'AW'
   const customColor = (config as any)?.hero_text_color
   const heroImgUrl  = asset('hero_main') ?? config?.hero_image_url ?? null
@@ -154,7 +157,7 @@ export default async function HomePage() {
             </div>
 
             {/* Texto hero */}
-            <div className="absolute right-10 top-1/2 -translate-y-1/2 max-w-xs text-right z-10">
+            <div className="absolute right-10 top-1/2 -translate-y-1/2 max-w-md text-right z-10">
               <p
                 className="text-xs tracking-[0.25em] uppercase mb-4"
                 style={customColor ? { color: customColor + 'B3' } : { color: 'rgba(255,255,255,0.7)' }}
@@ -162,12 +165,11 @@ export default async function HomePage() {
                 {heroEyebrow}
               </p>
               <h1
-                className="text-5xl md:text-6xl font-bold leading-tight mb-5"
+                className="text-5xl md:text-6xl font-normal leading-tight mb-5"
                 style={customColor ? { color: customColor } : { color: '#ffffff' }}
               >
                 {heroLine1}<br />
-                {heroItalic}<br />
-                {heroLine3}
+                <span className="italic">{heroItalic}</span>
               </h1>
               <p
                 className="text-sm mb-7 font-light leading-relaxed"
