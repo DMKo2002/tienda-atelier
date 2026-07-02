@@ -49,7 +49,7 @@ export default async function HomePage() {
 
   const { data: config } = await supabase
     .from('store_config')
-    .select('logo_url, hero_image_url, hero_eyebrow, hero_title_line1, hero_title_italic, hero_title_line3, hero_subtitle, hero_season, hero_text_color, nav_text_color, collection_text_color, blog_heading, blog_subheading, blog_posts, whatsapp_number, notification_email, instagram_url, facebook_url, tiktok_url, pickup_address, pickup_enabled, branches, price_visibility')
+    .select('logo_url, hero_image_url, hero_eyebrow, hero_title_line1, hero_title_italic, hero_title_line3, hero_subtitle, hero_season, hero_text_color, nav_text_color, collection_text_color, blog_heading, blog_subheading, blog_posts, newsletter_bg_color, whatsapp_number, notification_email, instagram_url, facebook_url, tiktok_url, pickup_address, pickup_enabled, branches, price_visibility')
     .eq('tenant_id', TENANT_ID())
     .single()
 
@@ -113,6 +113,8 @@ export default async function HomePage() {
     bg: def.bg,
     date: today,
   }))
+
+  const newsletterBgColor = (config as any)?.newsletter_bg_color || '#1A1A1A'
 
   return (
     <>
@@ -356,7 +358,7 @@ export default async function HomePage() {
         </section>
 
         {/* ── NEWSLETTER ───────────────────────────────────────── */}
-        <section className="relative bg-[#1A1A1A] py-24 px-6">
+        <section className="relative py-24 px-6" style={{ backgroundColor: newsletterBgColor }}>
           <div
             className="absolute inset-0 opacity-20"
             style={{ backgroundImage: 'radial-gradient(ellipse at 20% 50%, #E07B39 0%, transparent 60%), radial-gradient(ellipse at 80% 50%, #555 0%, transparent 60%)' }}
