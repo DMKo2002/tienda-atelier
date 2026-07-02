@@ -6,6 +6,7 @@ export const dynamic = 'force-dynamic'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import ProductCard from '@/components/shop/ProductCard'
+import HeroThumbnails from '@/components/shop/HeroThumbnails'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
@@ -125,7 +126,7 @@ export default async function HomePage() {
               <img
                 src={heroImgUrl}
                 alt="Hero"
-                className="w-full h-full object-cover transition-transform duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/hero:scale-[1.08]"
+                className="w-full h-full object-cover transition-transform duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/hero:scale-[1.12]"
               />
             ) : (
               <div className="w-full h-full bg-[#E0D8CE]" />
@@ -133,33 +134,8 @@ export default async function HomePage() {
 
             <div className="absolute inset-0 bg-gradient-to-l from-black/45 via-transparent to-transparent" />
 
-            {/* Thumbnails — abajo izquierda */}
-            <div className="absolute bottom-10 left-8 flex gap-3 z-10">
-              <div className="overflow-hidden group/t1 cursor-pointer" style={{ width: '18.5vw', height: 'calc(18.5vw * 1.3125)' }}>
-                {asset('hero_thumb_1') ? (
-                  <img src={asset('hero_thumb_1')!} alt="" className="w-full h-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/t1:scale-110" />
-                ) : (
-                  <div className="w-full h-full bg-[#8B7355]" />
-                )}
-              </div>
-              <div className="overflow-hidden group/t2 cursor-pointer" style={{ width: '18.5vw', height: 'calc(18.5vw * 1.3125)' }}>
-                {asset('hero_thumb_2') ? (
-                  <img src={asset('hero_thumb_2')!} alt="" className="w-full h-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/t2:scale-110" />
-                ) : (
-                  <div className="w-full h-full bg-[#7B3535]" />
-                )}
-              </div>
-            </div>
-
-            {/* Flechas */}
-            <div className="absolute bottom-3 left-8 z-10 flex gap-2">
-              <button className="w-9 h-9 bg-[var(--color-black)] text-white flex items-center justify-center hover:bg-[var(--color-accent)] transition-colors">
-                <ChevronLeft size={16} />
-              </button>
-              <button className="w-9 h-9 bg-[var(--color-black)] text-white flex items-center justify-center hover:bg-[var(--color-accent)] transition-colors">
-                <ChevronRight size={16} />
-              </button>
-            </div>
+            {/* Thumbnails + flechas — clickeables, intercambian las 2 fotos entre sí */}
+            <HeroThumbnails thumb1={asset('hero_thumb_1')} thumb2={asset('hero_thumb_2')} />
 
             {/* Texto hero — centrado en mobile, alineado a la izquierda desde md */}
             <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 px-6 text-center md:inset-x-auto md:left-[64%] md:px-0 md:max-w-xl md:text-left z-10">
