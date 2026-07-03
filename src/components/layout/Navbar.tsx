@@ -71,7 +71,7 @@ export default function Navbar({ storeName = 'ATELIER', logoUrl, instagramUrl, f
           {/* Logo — extremo izquierdo */}
           <Link href="/" className="flex-shrink-0 mr-10">
             {logoUrl ? (
-              <img src={logoUrl} alt={storeName} className="h-[18px] max-w-[100px] object-contain" />
+              <img src={logoUrl} alt={storeName} className="h-[27px] max-w-[150px] object-contain" />
             ) : (
               <span className="text-lg font-bold tracking-tight" style={{ color }}>
                 {storeName}
