@@ -216,7 +216,7 @@ export default async function HomePage() {
         </section>
 
         {/* ── COLECCIONES ──────────────────────────────────────── */}
-        <section className="max-w-7xl mx-auto px-6 pb-20">
+        <section className="w-full px-4 md:px-8 lg:px-12 pb-20">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {collections.map((col, i) => {
               const colImg = asset(`collection_${i + 1}`)
@@ -259,7 +259,7 @@ export default async function HomePage() {
         </section>
 
         {/* ── FEATURED PRODUCTS ────────────────────────────────── */}
-        <section className="max-w-7xl mx-auto px-6 pb-24">
+        <section className="w-full px-4 md:px-8 lg:px-12 pb-24">
           <div className="flex items-start justify-between mb-10">
             <div>
               <h2 className="text-4xl font-bold text-[var(--color-black)] mb-2">Featured product</h2>
@@ -321,7 +321,7 @@ export default async function HomePage() {
         </section>
 
         {/* ── BLOG ─────────────────────────────────────────────── */}
-        <section className="max-w-7xl mx-auto px-6 pb-24">
+        <section className="w-full px-4 md:px-8 lg:px-12 pb-24">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold text-[var(--color-black)] mb-3">{blogHeading}</h2>
             <p className="text-sm text-[var(--color-accent)]">
