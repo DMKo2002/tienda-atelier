@@ -45,7 +45,9 @@ const COLOR_MAP: Record<string, string> = {
 }
 
 function getColorHex(name: string): string {
-  return COLOR_MAP[name.toLowerCase().trim()] ?? '#CCCCCC'
+  const trimmed = name.trim()
+  if (/^#[0-9A-Fa-f]{3,6}$/.test(trimmed)) return trimmed
+  return COLOR_MAP[trimmed.toLowerCase()] ?? '#CCCCCC'
 }
 function isLight(hex: string): boolean {
   const r = parseInt(hex.slice(1, 3), 16)
