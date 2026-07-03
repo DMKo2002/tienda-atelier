@@ -66,14 +66,14 @@ export default function Navbar({ storeName = 'ATELIER', logoUrl, instagramUrl, f
       <header className="fixed top-0 left-0 right-0 z-50 bg-transparent">
         {/* pr reserva la franja clara de la derecha (19% en desktop) para que el
             cluster de íconos quede pegado al borde de la foto, no al borde real de la pantalla */}
-        <div className="w-full pl-6 pr-6 md:pr-[calc(19%+1.5rem)] h-16 flex items-center">
+        <div className="w-full pl-6 md:pl-10 lg:pl-14 pr-6 md:pr-[calc(19%+2.5rem)] lg:pr-[calc(19%+3.5rem)] h-16 flex items-center">
 
           {/* Logo — extremo izquierdo */}
           <Link href="/" className="flex-shrink-0 mr-10">
             {logoUrl ? (
-              <img src={logoUrl} alt={storeName} className="h-[14px] max-w-[80px] object-contain" />
+              <img src={logoUrl} alt={storeName} className="h-[18px] max-w-[100px] object-contain" />
             ) : (
-              <span className="text-base font-bold tracking-tight" style={{ color }}>
+              <span className="text-lg font-bold tracking-tight" style={{ color }}>
                 {storeName}
               </span>
             )}
