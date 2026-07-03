@@ -49,7 +49,7 @@ export default async function HomePage() {
 
   const { data: config } = await supabase
     .from('store_config')
-    .select('logo_url, hero_image_url, hero_eyebrow, hero_title_line1, hero_title_italic, hero_title_line3, hero_subtitle, hero_season, hero_text_color, nav_text_color, collection_text_color, blog_heading, blog_subheading, blog_posts, newsletter_bg_color, whatsapp_number, notification_email, instagram_url, facebook_url, tiktok_url, pickup_address, pickup_enabled, branches, price_visibility')
+    .select('logo_url, hero_image_url, hero_eyebrow, hero_title_line1, hero_title_italic, hero_title_line3, hero_subtitle, hero_season, hero_text_color, nav_text_color, collection_text_color, collection_posts, blog_heading, blog_subheading, blog_posts, newsletter_bg_color, whatsapp_number, notification_email, instagram_url, facebook_url, tiktok_url, pickup_address, pickup_enabled, branches, price_visibility')
     .eq('tenant_id', TENANT_ID())
     .single()
 
@@ -81,8 +81,12 @@ export default async function HomePage() {
   const priceVisibility = (config as any)?.price_visibility ?? 'all'
   const showPrices = priceVisibility === 'all' || (priceVisibility === 'logged_in' && isLoggedIn)
 
+  // Título y bajada de cada banner: si el tenant los cargó a mano en el panel,
+  // tienen prioridad sobre el nombre de categoría automático.
+  const rawCollectionPosts = (config as any)?.collection_posts
   const collections = Array.from({ length: 3 }, (_, i) => ({
-    name: (categories as any)?.[i]?.name ?? ['Nueva Colección', 'Accesorios', 'Ropa'][i],
+    name: rawCollectionPosts?.[i]?.title || (categories as any)?.[i]?.name || ['Nueva Colección', 'Accesorios', 'Ropa'][i],
+    subtitle: rawCollectionPosts?.[i]?.subtitle || 'Piezas seleccionadas para esta temporada.',
     slug: (categories as any)?.[i]?.slug ?? ['nueva-coleccion', 'accesorios', 'ropa'][i],
     palette: COLLECTION_PALETTES[i],
   }))
@@ -243,7 +247,7 @@ export default async function HomePage() {
                       {col.name}
                     </h2>
                     <p className="text-xs mb-4 leading-relaxed" style={{ color: baseColor + 'B3' }}>
-                      Piezas seleccionadas para esta temporada.
+                      {col.subtitle}
                     </p>
                     <span
                       className="text-xs font-bold tracking-[0.15em] uppercase border-b-2 pb-0.5 group-hover:text-[var(--color-accent)] group-hover:border-[var(--color-accent)] transition-colors"
