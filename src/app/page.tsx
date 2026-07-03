@@ -114,7 +114,7 @@ export default async function HomePage() {
     date: today,
   }))
 
-  const newsletterBgColor = (config as any)?.newsletter_bg_color || '#1A1A1A'
+  const newsletterBgColor = (config as any)?.newsletter_bg_color || '#DBD1BA'
 
   return (
     <>
@@ -358,26 +358,19 @@ export default async function HomePage() {
         </section>
 
         {/* ── NEWSLETTER ───────────────────────────────────────── */}
-        <section className="relative py-24 px-6" style={{ backgroundColor: newsletterBgColor }}>
-          <div
-            className="absolute inset-0 opacity-20"
-            style={{ backgroundImage: 'radial-gradient(ellipse at 20% 50%, #E07B39 0%, transparent 60%), radial-gradient(ellipse at 80% 50%, #555 0%, transparent 60%)' }}
-          />
-          <div className="relative max-w-xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+        <section className="py-20 px-6" style={{ backgroundColor: newsletterBgColor }}>
+          <div className="max-w-xl mx-auto text-center">
+            <h2 className="text-2xl md:text-3xl font-bold mb-6" style={{ color: '#8A8471' }}>
               Recibí las últimas novedades
             </h2>
-            <p className="text-sm text-white/60 mb-8">
-              Suscribite y obtené un 15% de descuento en tu primera compra
-            </p>
-            <div className="flex flex-col sm:flex-row">
+            <div className="flex items-center bg-[#FFFCFA] rounded-md overflow-hidden border border-black/5 max-w-md mx-auto">
               <input
                 type="email"
-                placeholder="Tu dirección de email..."
-                className="flex-1 bg-white text-[var(--color-black)] text-sm px-5 py-4 outline-none placeholder:text-[var(--color-gray)]"
+                placeholder="tu dirección de email"
+                className="flex-1 min-w-0 bg-transparent text-sm px-5 py-4 outline-none placeholder:text-zinc-400 text-zinc-600"
               />
-              <button className="bg-[var(--color-black)] text-white text-xs font-bold tracking-[0.15em] uppercase px-8 py-4 hover:bg-[#333333] transition-colors whitespace-nowrap">
-                SUSCRIBIRSE
+              <button className="px-6 py-4 text-sm text-zinc-500 border-l border-black/5 hover:text-zinc-800 transition-colors whitespace-nowrap">
+                suscribirse
               </button>
             </div>
           </div>
