@@ -195,11 +195,6 @@ export default async function ProductoPage({ params }: Props) {
               {/* Separador */}
               <div className="w-full h-px bg-[var(--color-border)] mb-8" />
 
-              {/* DEBUG TEMPORAL — sacar después de diagnosticar */}
-              <p style={{ fontSize: 11, color: 'red', background: '#fee', padding: 8, marginBottom: 12, wordBreak: 'break-all' }}>
-                DEBUG · TENANT_ID={String(TENANT_ID())} · config_existe={String(!!config)} · ignore_stock={String((config as any)?.ignore_stock)} (tipo: {typeof (config as any)?.ignore_stock})
-              </p>
-
               {/* Selector de variante + agregar al carrito */}
               <AddToCartButton
                 product={{
