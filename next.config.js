@@ -17,4 +17,10 @@ const nextConfig = {
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: '*.supabase.co', pathname: '/storage/v1/object/public/**' },
-      { protocol: 'https', hostname: '*' }
+      // Catch-all para imágenes de cualquier origen HTTPS (WooCommerce imports, etc.)
+      { protocol: 'https', hostname: '*' },
+    ],
+  },
+}
+
+module.exports = nextConfig
