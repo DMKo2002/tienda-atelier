@@ -81,7 +81,7 @@ export default function CatalogFilters({
   ].filter(Boolean) as { label: string; clear: string }[]
 
   return (
-    <div className="space-y-7 sticky top-28">
+    <div className="space-y-7 sticky top-28 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2 scroll-smooth">
 
       {/* Buscador */}
       <div>
