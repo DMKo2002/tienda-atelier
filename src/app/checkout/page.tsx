@@ -1,12 +1,81 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useCart } from '@/components/shop/CartContext'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import Link from 'next/link'
 import { ArrowLeft, CreditCard, Building2, ImageOff, Check } from 'lucide-react'
 import { createClient, TENANT_ID } from '@/lib/supabase'
+
+const PROVINCIAS = [
+  'Buenos Aires', 'Ciudad Autónoma de Buenos Aires', 'Catamarca', 'Chaco', 'Chubut',
+  'Córdoba', 'Corrientes', 'Entre Ríos', 'Formosa', 'Jujuy', 'La Pampa', 'La Rioja',
+  'Mendoza', 'Misiones', 'Neuquén', 'Río Negro', 'Salta', 'San Juan', 'San Luis',
+  'Santa Cruz', 'Santa Fe', 'Santiago del Estero', 'Tierra del Fuego', 'Tucumán',
+]
+
+function LocalidadAutocomplete({ value, provincia, onChange, inputClass }: {
+  value: string; provincia: string; onChange: (v: string) => void; inputClass: string
+}) {
+  const [query, setQuery] = useState(value)
+  const [sugerencias, setSugerencias] = useState<string[]>([])
+  const [open, setOpen] = useState(false)
+  const [buscando, setBuscando] = useState(false)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => { setQuery(''); onChange(''); setSugerencias([]) }, [provincia])
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  function handleInput(v: string) {
+    setQuery(v); onChange('')
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (!provincia || v.length < 2) { setSugerencias([]); setOpen(false); return }
+    debounceRef.current = setTimeout(async () => {
+      setBuscando(true)
+      try {
+        const url = `https://apis.datos.gob.ar/georef/api/localidades?provincia=${encodeURIComponent(provincia)}&nombre=${encodeURIComponent(v)}&orden=nombre&max=8&campos=nombre`
+        const res = await fetch(url)
+        const data = await res.json()
+        const nombres: string[] = [...new Set((data.localidades ?? []).map((l: any) => l.nombre))] as string[]
+        setSugerencias(nombres); setOpen(nombres.length > 0)
+      } catch { setSugerencias([]) } finally { setBuscando(false) }
+    }, 300)
+  }
+
+  return (
+    <div ref={containerRef} className="relative">
+      <input
+        type="text" autoComplete="off"
+        className={inputClass}
+        placeholder={provincia ? 'Escribí para buscar...' : 'Primero elegí una provincia'}
+        disabled={!provincia} value={query}
+        onChange={e => handleInput(e.target.value)}
+        onFocus={() => sugerencias.length > 0 && setOpen(true)}
+      />
+      {buscando && <div className="absolute right-3 top-1/2 -translate-y-1/2"><div className="w-3 h-3 border border-gray-300 border-t-transparent rounded-full animate-spin" /></div>}
+      {open && sugerencias.length > 0 && (
+        <ul className="absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-[var(--color-border)] shadow-lg max-h-48 overflow-y-auto">
+          {sugerencias.map(s => (
+            <li key={s}>
+              <button type="button" onMouseDown={() => { setQuery(s); onChange(s); setSugerencias([]); setOpen(false) }}
+                className="w-full text-left px-3 py-2 text-sm text-[var(--color-charcoal)] hover:bg-[#F2EEE9] transition-colors">
+                {s}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
 
 const formatPrice = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n)
@@ -21,20 +90,25 @@ export default function CheckoutPage() {
   const [storeConfig, setStoreConfig] = useState<any>(null)
   const [currentOrderId, setCurrentOrderId] = useState<string | null>(null)
   const [orderTotal, setOrderTotal] = useState(0)
+  const [emailLocked, setEmailLocked] = useState(false)
 
-  const [fullName, setFullName] = useState('')
+  const [nombre, setNombre] = useState('')
+  const [apellido, setApellido] = useState('')
+  const [cuil, setCuil] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [addressStreet, setAddressStreet] = useState('')
   const [addressCity, setAddressCity] = useState('')
   const [addressProvince, setAddressProvince] = useState('')
   const [addressZip, setAddressZip] = useState('')
+  const [country, setCountry] = useState('Argentina')
   const [shippingMethod, setShippingMethod] = useState('')
   const [shippingCost, setShippingCost] = useState(0)
   const [notes, setNotes] = useState('')
   const [copied, setCopied] = useState<'alias' | 'cbu' | null>(null)
 
   useEffect(() => {
+    // Cargar config de la tienda
     supabase.from('store_config')
       .select('mp_enabled, transfer_enabled, transfer_cbu, transfer_alias, whatsapp_number, min_order_amount, custom_shipping')
       .eq('tenant_id', TENANT_ID())
@@ -48,6 +122,30 @@ export default function CheckoutPage() {
           setShippingCost(methods[0].price ?? 0)
         }
       })
+
+    // Pre-llenar datos del usuario registrado
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return
+      setEmail(user.email ?? '')
+      setEmailLocked(true)
+
+      const { data: cust } = await supabase
+        .from('customers')
+        .select('full_name, last_name, cuit, phone, address_street, address_city, address_province')
+        .eq('email', user.email ?? '')
+        .eq('tenant_id', TENANT_ID())
+        .maybeSingle()
+
+      if (cust) {
+        if (cust.full_name) setNombre(cust.full_name)
+        if (cust.last_name) setApellido(cust.last_name)
+        if (cust.cuit) setCuil(cust.cuit)
+        if (cust.phone) setPhone(cust.phone)
+        if (cust.address_street) setAddressStreet(cust.address_street)
+        if (cust.address_city) setAddressCity(cust.address_city)
+        if (cust.address_province) setAddressProvince(cust.address_province)
+      }
+    })
   }, [])
 
   const activeCustomMethods: any[] = ((storeConfig as any)?.custom_shipping ?? []).filter((m: any) => m.active && m.name)
@@ -63,12 +161,22 @@ export default function CheckoutPage() {
 
   async function handleContinuar() {
     if (!meetsMin) {
-      const falta = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(minOrder! - total)
-      setError(`El pedido mínimo es de ${new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(minOrder!)}. Te faltan ${falta}.`)
+      const falta = formatPrice(minOrder! - total)
+      setError(`El pedido mínimo es de ${formatPrice(minOrder!)}. Te faltan ${falta}.`)
       return
     }
-    if (!fullName.trim()) { setError('El nombre es obligatorio'); return }
+    if (!nombre.trim()) { setError('El nombre es obligatorio'); return }
+    if (!apellido.trim()) { setError('El apellido es obligatorio'); return }
     if (!email.trim()) { setError('El email es obligatorio'); return }
+    if (!phone.trim()) { setError('El teléfono es obligatorio'); return }
+    if (!cuil.trim()) { setError('El CUIL/CUIT es obligatorio'); return }
+    if (!isPickup) {
+      if (!addressStreet.trim()) { setError('La dirección es obligatoria'); return }
+      if (!addressCity.trim()) { setError('La localidad es obligatoria'); return }
+      if (!addressProvince.trim()) { setError('La provincia es obligatoria'); return }
+      if (!addressZip.trim()) { setError('El código postal es obligatorio'); return }
+      if (!country.trim()) { setError('El país es obligatorio'); return }
+    }
     setError(null)
     setStep('pago')
   }
@@ -81,13 +189,17 @@ export default function CheckoutPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          fullName: fullName.trim(),
+          firstName: nombre.trim(),
+          lastName: apellido.trim(),
+          fullName: `${nombre.trim()} ${apellido.trim()}`.trim(),
           email: email.trim(),
           phone: phone.trim() || null,
+          cuil: cuil.trim() || null,
           addressStreet: addressStreet.trim() || null,
           addressCity: addressCity.trim() || null,
           addressProvince: addressProvince.trim() || null,
           addressZip: addressZip.trim() || null,
+          country: country.trim() || null,
           shippingMethod,
           shippingCost,
           notes: notes.trim() || null,
@@ -125,7 +237,7 @@ export default function CheckoutPage() {
             variant_id: item.variantId, name: item.productName,
             variant_desc: item.variantDesc, quantity: item.quantity, unit_price: item.price,
           })),
-          payer: { name: fullName, email, phone },
+          payer: { name: `${nombre} ${apellido}`, email, phone },
         }),
       })
       const data = await res.json()
@@ -153,6 +265,10 @@ export default function CheckoutPage() {
     setCopied(type)
     setTimeout(() => setCopied(null), 2000)
   }
+
+  const inputClass = "w-full px-3 py-2.5 border border-[var(--color-border)] bg-white text-sm focus:outline-none focus:border-[var(--color-charcoal)] transition-colors"
+  const inputDisabledClass = "w-full px-3 py-2.5 border border-[var(--color-border)] bg-[#F2EEE9] text-sm text-[var(--color-stone)] cursor-not-allowed"
+  const labelClass = "block text-xs text-[var(--color-stone)] mb-1.5"
 
   if (items.length === 0 && step !== 'qr') {
     return (
@@ -276,23 +392,43 @@ export default function CheckoutPage() {
             <div className="lg:col-span-2">
 
               {step === 'datos' && (
-                <div className="space-y-5">
-                  {/* Datos de contacto */}
+                <div className="space-y-6">
+
+                  {/* Datos personales */}
                   <div className="space-y-4">
-                    <p className="text-xs tracking-[0.2em] uppercase text-[var(--color-stone)]">Datos de contacto</p>
+                    <p className="text-xs tracking-[0.2em] uppercase text-[var(--color-stone)]">Datos personales</p>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs text-[var(--color-stone)] mb-1.5">Nombre completo *</label>
-                        <input className="w-full px-3 py-2.5 border border-[var(--color-border)] bg-white text-sm focus:outline-none focus:border-[var(--color-charcoal)] transition-colors" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Tu nombre" />
+                        <label className={labelClass}>Nombre *</label>
+                        <input className={inputClass} value={nombre} onChange={e => setNombre(e.target.value)} placeholder="Tu nombre" />
                       </div>
                       <div>
-                        <label className="block text-xs text-[var(--color-stone)] mb-1.5">Email *</label>
-                        <input className="w-full px-3 py-2.5 border border-[var(--color-border)] bg-white text-sm focus:outline-none focus:border-[var(--color-charcoal)] transition-colors" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="tu@email.com" />
+                        <label className={labelClass}>Apellido *</label>
+                        <input className={inputClass} value={apellido} onChange={e => setApellido(e.target.value)} placeholder="Tu apellido" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className={labelClass}>CUIL / CUIT *</label>
+                        <input className={inputClass} value={cuil} onChange={e => setCuil(e.target.value)} placeholder="20-12345678-9" />
+                      </div>
+                      <div>
+                        <label className={labelClass}>Teléfono *</label>
+                        <input className={inputClass} value={phone} onChange={e => setPhone(e.target.value)} placeholder="+54 9 11 XXXX-XXXX" />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs text-[var(--color-stone)] mb-1.5">Teléfono</label>
-                      <input className="w-full px-3 py-2.5 border border-[var(--color-border)] bg-white text-sm focus:outline-none focus:border-[var(--color-charcoal)] transition-colors" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+54 9 11 XXXX-XXXX" />
+                      <label className={labelClass}>
+                        Email *{emailLocked && <span className="ml-2 text-[10px] text-[var(--color-stone)] normal-case tracking-normal">(asociado a tu cuenta)</span>}
+                      </label>
+                      <input
+                        className={emailLocked ? inputDisabledClass : inputClass}
+                        type="email"
+                        value={email}
+                        onChange={e => !emailLocked && setEmail(e.target.value)}
+                        readOnly={emailLocked}
+                        placeholder="tu@email.com"
+                      />
                     </div>
                   </div>
 
@@ -326,27 +462,33 @@ export default function CheckoutPage() {
 
                       {/* Dirección (oculta para retiro en local) */}
                       {!isPickup && (
-                        <div className="grid grid-cols-2 gap-4 pt-2">
-                          <div className="col-span-2">
-                            <label className="block text-xs text-[var(--color-stone)] mb-1.5">Calle y número</label>
-                            <input className="w-full px-3 py-2.5 border border-[var(--color-border)] bg-white text-sm focus:outline-none focus:border-[var(--color-charcoal)] transition-colors" value={addressStreet} onChange={e => setAddressStreet(e.target.value)} placeholder="Av. Corrientes 1234" />
-                          </div>
+                        <div className="space-y-4 pt-2">
                           <div>
-                            <label className="block text-xs text-[var(--color-stone)] mb-1.5">Ciudad</label>
-                            <input className="w-full px-3 py-2.5 border border-[var(--color-border)] bg-white text-sm focus:outline-none focus:border-[var(--color-charcoal)] transition-colors" value={addressCity} onChange={e => setAddressCity(e.target.value)} placeholder="Buenos Aires" />
+                            <label className={labelClass}>Calle y número *</label>
+                            <input className={inputClass} value={addressStreet} onChange={e => setAddressStreet(e.target.value)} placeholder="Av. Corrientes 1234" />
                           </div>
-                          <div>
-                            <label className="block text-xs text-[var(--color-stone)] mb-1.5">Provincia</label>
-                            <input className="w-full px-3 py-2.5 border border-[var(--color-border)] bg-white text-sm focus:outline-none focus:border-[var(--color-charcoal)] transition-colors" value={addressProvince} onChange={e => setAddressProvince(e.target.value)} placeholder="Buenos Aires" />
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <label className={labelClass}>Provincia *</label>
+                              <select className={inputClass} value={addressProvince} onChange={e => setAddressProvince(e.target.value)}>
+                                <option value="">Seleccioná una provincia</option>
+                                {PROVINCIAS.map(p => <option key={p} value={p}>{p}</option>)}
+                              </select>
+                            </div>
+                            <div>
+                              <label className={labelClass}>Localidad *</label>
+                              <LocalidadAutocomplete value={addressCity} provincia={addressProvince} onChange={setAddressCity} inputClass={inputClass} />
+                            </div>
                           </div>
-                          <div>
-                            <label className="block text-xs text-[var(--color-stone)] mb-1.5">Código postal</label>
-                            <input
-                              className="w-full px-3 py-2.5 border border-[var(--color-border)] bg-white text-sm focus:outline-none focus:border-[var(--color-charcoal)] transition-colors"
-                              value={addressZip}
-                              onChange={e => setAddressZip(e.target.value)}
-                              placeholder="1000"
-                            />
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <label className={labelClass}>Código postal *</label>
+                              <input className={inputClass} value={addressZip} onChange={e => setAddressZip(e.target.value)} placeholder="1000" />
+                            </div>
+                            <div>
+                              <label className={labelClass}>País *</label>
+                              <input className={inputClass} value={country} onChange={e => setCountry(e.target.value)} placeholder="Argentina" />
+                            </div>
                           </div>
                         </div>
                       )}
@@ -355,7 +497,7 @@ export default function CheckoutPage() {
 
                   {/* Notas */}
                   <div>
-                    <label className="block text-xs text-[var(--color-stone)] mb-1.5">Notas (opcional)</label>
+                    <label className={labelClass}>Notas (opcional)</label>
                     <textarea className="w-full px-3 py-2.5 border border-[var(--color-border)] bg-white text-sm focus:outline-none focus:border-[var(--color-charcoal)] transition-colors resize-none" rows={2} value={notes} onChange={e => setNotes(e.target.value)} placeholder="Instrucciones especiales..." />
                   </div>
 

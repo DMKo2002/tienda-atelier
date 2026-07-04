@@ -24,7 +24,8 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const {
-      fullName, email, phone,
+      firstName, lastName, fullName, email, phone,
+      cuil,
       addressStreet, addressCity, addressProvince, addressZip,
       shippingMethod, notes, items,
       paymentMethod,
@@ -41,7 +42,7 @@ export async function POST(req: NextRequest) {
 
     // ── 1. Fetch store config (envío + email notificación) ────────────────────
     const [{ data: storeConf }, { data: tenant }] = await Promise.all([
-      supabase.from('store_config').select('custom_shipping, notification_email').eq('tenant_id', TENANT_ID()).single(),
+      supabase.from('store_config').select('custom_shipping, notification_email, email_from_name, reply_to').eq('tenant_id', TENANT_ID()).single(),
       supabase.from('tenants').select('name').eq('id', TENANT_ID()).single(),
     ])
 
@@ -68,7 +69,7 @@ export async function POST(req: NextRequest) {
 
     const { data: priceRulesData, error: priceErr } = await supabase
       .from('price_rules')
-      .select('variant_id, type, price, min_qty, active')
+      .select('variant_id, type, price, compare_at_price, min_qty, active')
       .in('variant_id', variantIds)
       .eq('active', true)
 
@@ -92,8 +93,15 @@ export async function POST(req: NextRequest) {
         actualPrice = wholesaleRule.price
         actualPriceType = 'wholesale'
       } else if (retailRule) {
-        actualPrice = retailRule.price
+        // compare_at_price = precio rebajado (más bajo); si existe y es menor, cobrar ese
+        actualPrice = (retailRule.compare_at_price > 0 && retailRule.compare_at_price < retailRule.price)
+          ? retailRule.compare_at_price
+          : retailRule.price
         actualPriceType = 'retail'
+      } else if (wholesaleRule) {
+        // Producto sin precio minorista — usar precio mayorista igual
+        actualPrice = wholesaleRule.price
+        actualPriceType = 'wholesale'
       } else {
         throw new Error(`Precio no encontrado para el producto "${item.productName}". Por favor recargá la página.`)
       }
@@ -121,13 +129,15 @@ export async function POST(req: NextRequest) {
         id: user.id,
         tenant_id: TENANT_ID(),
         email: user.email ?? email,
-        full_name: fullName,
+        full_name: firstName || fullName,
+        last_name: lastName || null,
+        cuit: cuil || null,
         phone: phone || null,
         address_street: addressStreet || null,
         address_city: addressCity || null,
         address_province: addressProvince || null,
         address_zip: addressZip || null,
-      }, { onConflict: 'id', ignoreDuplicates: true })
+      }, { onConflict: 'id', ignoreDuplicates: false })
     } else {
       const { data: existing } = await supabase
         .from('customers')
@@ -144,7 +154,9 @@ export async function POST(req: NextRequest) {
           .insert({
             tenant_id: TENANT_ID(),
             email: email.trim(),
-            full_name: fullName.trim(),
+            full_name: (firstName || fullName).trim(),
+            last_name: lastName?.trim() || null,
+            cuit: cuil || null,
             phone: phone || null,
             address_street: addressStreet || null,
             address_city: addressCity || null,
@@ -228,15 +240,29 @@ export async function POST(req: NextRequest) {
       paymentMethod,
     }
 
+    const emailFromName    = (storeConf as any)?.email_from_name ?? storeName
+    const replyTo          = (storeConf as any)?.reply_to ?? undefined
+    const ownerEmail       = (storeConf as any)?.notification_email
+
     // Al cliente
     sendEmail({
       to: email.trim(),
       subject: `Tu pedido #${order.id.slice(0, 8).toUpperCase()} fue recibido — ${storeName}`,
       html: emailConfirmacionCliente(emailPayload),
+      fromName: emailFromName,
+      replyTo,
+    }).then(({ ok }) => {
+      supabase.from('notifications_log').insert({
+        tenant_id: TENANT_ID(),
+        order_id: order.id,
+        channel: 'email',
+        recipient: email.trim(),
+        subject: `Confirmación pedido #${order.id.slice(0, 8).toUpperCase()}`,
+        status: ok ? 'sent' : 'failed',
+      })
     }).catch(e => console.error('[email cliente]', e))
 
     // Al dueño
-    const ownerEmail = (storeConf as any)?.notification_email
     if (ownerEmail) {
       sendEmail({
         to: ownerEmail,
@@ -250,6 +276,16 @@ export async function POST(req: NextRequest) {
           addressProvince: addressProvince || null,
           addressZip: addressZip || null,
         }),
+        fromName: emailFromName,
+      }).then(({ ok }) => {
+        supabase.from('notifications_log').insert({
+          tenant_id: TENANT_ID(),
+          order_id: order.id,
+          channel: 'email',
+          recipient: ownerEmail,
+          subject: `Nuevo pedido #${order.id.slice(0, 8).toUpperCase()} — ${storeName}`,
+          status: ok ? 'sent' : 'failed',
+        })
       }).catch(e => console.error('[email dueño]', e))
     }
 

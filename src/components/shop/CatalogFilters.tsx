@@ -24,19 +24,21 @@ interface Category {
 interface CatalogFiltersProps {
   categories: Category[]
   availableColors: string[]
+  availableSizes: string[]
   maxPrice: number
   currentCat?: string
   currentOrden?: string
   currentQ?: string
   currentColor?: string
+  currentTalle?: string
   currentPrecioMin?: number
   currentPrecioMax?: number
   currentDescuento?: boolean
 }
 
 export default function CatalogFilters({
-  categories, availableColors, maxPrice,
-  currentCat, currentOrden, currentQ, currentColor,
+  categories, availableColors, availableSizes, maxPrice,
+  currentCat, currentOrden, currentQ, currentColor, currentTalle,
   currentPrecioMin, currentPrecioMax, currentDescuento,
 }: CatalogFiltersProps) {
   const router = useRouter()
@@ -50,6 +52,7 @@ export default function CatalogFilters({
     if (currentOrden) params.orden = currentOrden
     if (q) params.q = q
     if (currentColor) params.color = currentColor
+    if (currentTalle) params.talle = currentTalle
     if (precioMin) params.precio_min = precioMin
     if (precioMax) params.precio_max = precioMax
     if (currentDescuento) params.descuento = '1'
@@ -59,7 +62,7 @@ export default function CatalogFilters({
     })
     const qs = new URLSearchParams(params).toString()
     return `/tienda${qs ? '?' + qs : ''}`
-  }, [currentCat, currentOrden, q, currentColor, precioMin, precioMax, currentDescuento])
+  }, [currentCat, currentOrden, q, currentColor, currentTalle, precioMin, precioMax, currentDescuento])
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault()
@@ -74,6 +77,7 @@ export default function CatalogFilters({
   const activeFilters = [
     currentCat && { label: currentCat, clear: buildUrl({ cat: undefined }) },
     currentColor && { label: currentColor, clear: buildUrl({ color: undefined }) },
+    currentTalle && { label: `Talle ${currentTalle}`, clear: buildUrl({ talle: undefined }) },
     currentPrecioMin && { label: `desde $${currentPrecioMin.toLocaleString('es-AR')}`, clear: buildUrl({ precio_min: undefined }) },
     currentPrecioMax && { label: `hasta $${currentPrecioMax.toLocaleString('es-AR')}`, clear: buildUrl({ precio_max: undefined }) },
     currentDescuento && { label: 'En descuento', clear: buildUrl({ descuento: undefined }) },
@@ -210,6 +214,31 @@ export default function CatalogFilters({
           {currentColor && (
             <p className="text-xs text-[var(--color-stone)] mt-2 capitalize">{currentColor}</p>
           )}
+        </div>
+      )}
+
+      {/* Talles */}
+      {availableSizes.length > 0 && (
+        <div>
+          <p className="text-[10px] tracking-[0.2em] uppercase text-[var(--color-stone)] mb-3">Talle</p>
+          <div className="flex flex-wrap gap-1.5">
+            {availableSizes.map(size => {
+              const active = currentTalle?.toUpperCase() === size.toUpperCase()
+              return (
+                <button
+                  key={size}
+                  onClick={() => router.push(buildUrl({ talle: active ? undefined : size }))}
+                  className={`h-7 px-2.5 text-[11px] border transition-colors rounded-sm ${
+                    active
+                      ? 'border-[var(--color-charcoal)] bg-[var(--color-charcoal)] text-white'
+                      : 'border-[var(--color-border)] text-[var(--color-charcoal)] hover:border-[var(--color-charcoal)]'
+                  }`}
+                >
+                  {size}
+                </button>
+              )
+            })}
+          </div>
         </div>
       )}
 

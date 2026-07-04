@@ -15,6 +15,7 @@ interface ProductCardProps {
   showWholesale?: boolean
   showPrices?: boolean
   priceVisibility?: 'all' | 'logged_in' | 'wholesale_only'
+  isRetailUser?: boolean
   index?: number
   colors?: string[]
   sizes?: string[]
@@ -25,12 +26,15 @@ const formatPrice = (n: number) =>
 
 export default function ProductCard({
   id, name, slug, coverUrl, retailPrice, retailCompareAt, wholesalePrice,
-  showWholesale = false, showPrices = true, priceVisibility = 'all', index = 0, colors = [], sizes = []
+  showWholesale = false, showPrices = true, priceVisibility = 'all', isRetailUser = false, index = 0, colors = [], sizes = []
 }: ProductCardProps) {
 
-  const hasDiscount = retailCompareAt && retailCompareAt > (retailPrice ?? 0)
+  // Props pre-procesadas desde tienda/page.tsx:
+  //   retailPrice     = precio efectivo (lo que paga el cliente, ej: 18000)
+  //   retailCompareAt = precio regular tachado (el más alto, ej: 20000)
+  const hasDiscount = !!(retailCompareAt && retailCompareAt > (retailPrice ?? 0))
   const discountPct = hasDiscount
-    ? Math.round((1 - (retailPrice! / retailCompareAt!)) * 100)
+    ? Math.round((1 - retailPrice! / retailCompareAt!) * 100)
     : null
 
   return (
@@ -83,6 +87,10 @@ export default function ProductCard({
                 </span>
               )}
             </>
+          ) : isRetailUser ? (
+            <span className="text-xs text-[var(--color-gray)]">
+              Solo para cuentas mayoristas
+            </span>
           ) : (
             <a
               href="/cuenta/login"

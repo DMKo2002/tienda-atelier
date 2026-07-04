@@ -1,4 +1,4 @@
-import { createServerSupabase, TENANT_ID } from '@/lib/supabase-server'
+import { createServerSupabase, createServiceSupabase, TENANT_ID } from '@/lib/supabase-server'
 import { notFound } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
@@ -89,27 +89,48 @@ export default async function ProductoPage({ params }: Props) {
   })
   const storeName = tenant?.name ?? 'TIENDA'
 
-  // Price visibility check — use getSession to avoid cookie writes in Server Components
   const priceVisibility = (config as any)?.price_visibility ?? 'all'
-  let showPrices = priceVisibility === 'all'
-  if (priceVisibility !== 'all') {
+  let showPrices = false
+  let isWholesaleUser = false  // controla si se muestra el precio mayorista
+  let isRetailUser = false     // logueado como retail en modo wholesale_only
+
+  if (priceVisibility === 'all') {
+    // Todos ven ambos precios sin importar si están logueados
+    showPrices = true
+    isWholesaleUser = true
+  } else {
     try {
-      const { data: sessionData } = await supabase.auth.getSession()
-      const user = sessionData?.session?.user
+      const { data: { user } } = await supabase.auth.getUser()
       if (user) {
-        if (priceVisibility === 'logged_in') {
+        const service = createServiceSupabase()
+        // Admin ve todo
+        const { data: adminRows } = await service.from('users').select('id').eq('email', user.email ?? '').eq('tenant_id', TENANT_ID()).limit(1)
+        if (adminRows && adminRows.length > 0) {
           showPrices = true
-        } else if (priceVisibility === 'wholesale_only') {
-          const { data: customer } = await supabase
+          isWholesaleUser = true
+        } else {
+          // Service client bypasea RLS — necesario para customers importados (id ≠ auth.uid)
+          const { data: customer } = await service
             .from('customers')
             .select('type')
             .eq('email', user.email ?? '')
             .eq('tenant_id', TENANT_ID())
-            .single()
-          showPrices = customer?.type === 'wholesale'
+            .maybeSingle()
+          const isWholesale = customer?.type === 'wholesale'
+          const isRegistered = !!customer
+          if (priceVisibility === 'logged_in') {
+            // Cualquier registrado ve precios retail; solo mayoristas ven precio mayorista
+            showPrices = isRegistered
+            isWholesaleUser = isWholesale
+          } else if (priceVisibility === 'wholesale_only') {
+            // Solo mayoristas ven precios; retail logueado ve mensaje diferente
+            showPrices = isWholesale
+            isWholesaleUser = isWholesale
+            isRetailUser = isRegistered && !isWholesale
+          }
         }
       }
-    } catch { showPrices = false }
+    } catch { /* si no hay sesión, mantener defaults */ }
   }
 
   // Agrupar variantes por talle y color
@@ -120,7 +141,12 @@ export default async function ProductoPage({ params }: Props) {
   const wholesaleRule = product.variants?.[0]?.price_rules?.find((p: any) => p.type === 'wholesale' && p.active)
 
   const coverImage = images[0]?.url ?? null
-  const retailPrice = retailRule?.price
+  const retailRegular: number | undefined = retailRule?.price
+  const retailRebajado: number | undefined =
+    (retailRule?.compare_at_price > 0 && retailRule?.compare_at_price < (retailRule?.price ?? Infinity))
+      ? retailRule?.compare_at_price : undefined
+  const retailPrice = retailRebajado ?? retailRegular
+  const retailCompareAt = retailRebajado ? retailRegular : undefined
   const jsonLd = {
     '@context': 'https://schema.org/',
     '@type': 'Product',
@@ -169,17 +195,28 @@ export default async function ProductoPage({ params }: Props) {
                 {showPrices ? (
                   <>
                     {retailRule && (
-                      <p className="text-2xl font-light text-[var(--color-charcoal)]">
-                        {formatPrice(retailRule.price)}
-                      </p>
+                      <div>
+                        <p className="text-2xl font-light text-[var(--color-charcoal)]">
+                          {formatPrice(retailPrice!)}
+                        </p>
+                        {retailCompareAt && (
+                          <p className="text-sm text-[var(--color-stone)] line-through mt-0.5">
+                            {formatPrice(retailCompareAt)}
+                          </p>
+                        )}
+                      </div>
                     )}
-                    {wholesaleRule && (
+                    {isWholesaleUser && wholesaleRule && (
                       <p className="text-sm text-[var(--color-stone)] mt-1">
                         Precio mayorista: {formatPrice(wholesaleRule.price)}
                         <span className="ml-1 text-xs">(x{wholesaleRule.min_qty}+)</span>
                       </p>
                     )}
                   </>
+                ) : isRetailUser ? (
+                  <p className="text-sm text-[var(--color-stone)]">
+                    Necesitás una cuenta mayorista para ver el precio
+                  </p>
                 ) : (
                   <a
                     href="/cuenta/login"
@@ -206,6 +243,7 @@ export default async function ProductoPage({ params }: Props) {
                 sizes={sizes as string[]}
                 colors={colors as string[]}
                 showPrices={showPrices}
+                isWholesale={isWholesaleUser}
                 ignoreStock={(config as any)?.ignore_stock ?? false}
               />
 

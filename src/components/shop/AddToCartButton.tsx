@@ -10,7 +10,7 @@ interface Variant {
   size: string | null
   color: string | null
   stock: number
-  price_rules: { type: string; price: number; min_qty: number; active: boolean }[]
+  price_rules: { type: string; price: number; compare_at_price?: number; min_qty: number; active: boolean }[]
 }
 
 interface AddToCartButtonProps {
@@ -19,6 +19,7 @@ interface AddToCartButtonProps {
   // productos deben aparecer disponibles sin importar el stock cargado —
   // pensado para mayoristas que manejan disponibilidad real por WhatsApp.
   ignoreStock?: boolean
+  isWholesale?: boolean
   product: {
     id: string
     name: string
@@ -32,7 +33,7 @@ interface AddToCartButtonProps {
 const formatPrice = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n)
 
-export default function AddToCartButton({ product, sizes, colors, showPrices = true, ignoreStock = false }: AddToCartButtonProps) {
+export default function AddToCartButton({ product, sizes, colors, showPrices = true, ignoreStock = false, isWholesale = false }: AddToCartButtonProps) {
   const { addItem } = useCart()
   const [selectedSize, setSelectedSize] = useState<string | null>(sizes[0] ?? null)
   const [selectedColor, setSelectedColor] = useState<string | null>(colors[0] ?? null)
@@ -74,13 +75,19 @@ export default function AddToCartButton({ product, sizes, colors, showPrices = t
     return sizeMatch && colorMatch
   })
 
-  const retailPrice = selectedVariant?.price_rules?.find(p => p.type === 'retail' && p.active)?.price
-  const wholesalePrice = selectedVariant?.price_rules?.find(p => p.type === 'wholesale' && p.active)
+  const retailRule = selectedVariant?.price_rules?.find(p => p.type === 'retail' && p.active)
+  const retailRegular = retailRule?.price
+  const retailRebajado = (retailRule?.compare_at_price ?? 0) > 0 && (retailRule?.compare_at_price ?? 0) < (retailRegular ?? Infinity)
+    ? retailRule!.compare_at_price! : undefined
+  const retailPrice = retailRebajado ?? retailRegular
+  const wholesalePrice = isWholesale
+    ? selectedVariant?.price_rules?.find(p => p.type === 'wholesale' && p.active)
+    : undefined
   const inStock = ignoreStock || (selectedVariant?.stock ?? 0) > 0
 
   const effectivePrice = wholesalePrice && quantity >= wholesalePrice.min_qty
     ? wholesalePrice.price
-    : (retailPrice ?? 0)
+    : (retailPrice ?? (isWholesale ? wholesalePrice?.price : undefined) ?? 0)
 
   const priceType: 'retail' | 'wholesale' = wholesalePrice && quantity >= wholesalePrice.min_qty
     ? 'wholesale' : 'retail'

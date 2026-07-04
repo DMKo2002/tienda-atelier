@@ -1,23 +1,51 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Turnstile from 'react-turnstile'
 
 type Tipo = 'retail' | 'wholesale'
 
+const PROVINCIAS = [
+  'Buenos Aires', 'Ciudad Autónoma de Buenos Aires', 'Catamarca', 'Chaco', 'Chubut',
+  'Córdoba', 'Corrientes', 'Entre Ríos', 'Formosa', 'Jujuy', 'La Pampa', 'La Rioja',
+  'Mendoza', 'Misiones', 'Neuquén', 'Río Negro', 'Salta', 'San Juan', 'San Luis',
+  'Santa Cruz', 'Santa Fe', 'Santiago del Estero', 'Tierra del Fuego', 'Tucumán',
+]
+
+function EyeIcon({ open }: { open: boolean }) {
+  if (open) {
+    return (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+        <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+        <line x1="1" y1="1" x2="23" y2="23"/>
+      </svg>
+    )
+  }
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+      <circle cx="12" cy="12" r="3"/>
+    </svg>
+  )
+}
+
 export default function RegistroPage() {
   const router = useRouter()
   const [tipo, setTipo] = useState<Tipo>('retail')
   const [form, setForm] = useState({
     nombre: '', apellido: '', email: '', password: '', confirmar: '',
-    empresa: '', cuit: '', direccion: '',
+    empresa: '', cuit: '', direccion: '', provincia: '', localidad: '',
   })
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmar, setShowConfirmar] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [exito, setExito] = useState(false)
+  const [confirmacion, setConfirmacion] = useState(false)
 
   function set(field: string, value: string) {
     setForm(f => ({ ...f, [field]: value }))
@@ -30,6 +58,11 @@ export default function RegistroPage() {
     if (form.password !== form.confirmar) {
       setError('Las contraseñas no coinciden')
       return
+    }
+    if (tipo === 'wholesale') {
+      if (!form.empresa || !form.cuit) { setError('Empresa y CUIT son obligatorios'); return }
+      if (!form.provincia || !form.localidad) { setError('Provincia y localidad son obligatorias'); return }
+      if (!form.direccion) { setError('La dirección es obligatoria'); return }
     }
     if (!turnstileToken) {
       setError('Completá la verificación de seguridad')
@@ -50,11 +83,14 @@ export default function RegistroPage() {
           empresa: form.empresa || undefined,
           cuit: form.cuit || undefined,
           direccion: form.direccion || undefined,
+          provincia: form.provincia || undefined,
+          localidad: form.localidad || undefined,
           turnstileToken,
         }),
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error); return }
+      setConfirmacion(data.confirmacion ?? false)
       setExito(true)
     } catch {
       setError('Error de conexión. Intentá de nuevo.')
@@ -74,7 +110,10 @@ export default function RegistroPage() {
           </div>
           <h1 className="font-display text-3xl font-light text-[var(--color-charcoal)] mb-3">¡Registro exitoso!</h1>
           <p className="text-sm text-[var(--color-stone)] font-light leading-relaxed mb-6">
-            Te enviamos un email de confirmación a <strong>{form.email}</strong>. Revisá tu bandeja de entrada para activar tu cuenta.
+            {confirmacion
+              ? <>Te enviamos un email de bienvenida a <strong>{form.email}</strong>. Si hay un link de confirmación, hacé click para activar tu cuenta.</>
+              : <>Tu cuenta fue creada. Recibiste un email de bienvenida en <strong>{form.email}</strong>. Ya podés iniciar sesión.</>
+            }
           </p>
           <Link href="/cuenta/login" className="text-sm text-[var(--color-charcoal)] underline hover:text-[var(--color-stone)] transition-colors">
             Ir al inicio de sesión
@@ -153,10 +192,39 @@ export default function RegistroPage() {
                 />
               </div>
               <div>
-                <label className="block text-[10px] tracking-[0.15em] uppercase text-[var(--color-stone)] mb-1.5">Dirección</label>
+                <label className="block text-[10px] tracking-[0.15em] uppercase text-[var(--color-stone)] mb-1.5">Dirección *</label>
                 <input
                   className="w-full px-3 py-2.5 border border-[var(--color-border)] bg-white text-sm focus:outline-none focus:border-[var(--color-charcoal)] transition-colors"
-                  value={form.direccion} onChange={e => set('direccion', e.target.value)}
+                  placeholder="Ej: Av. Corrientes 1234"
+                  value={form.direccion} onChange={e => set('direccion', e.target.value)} required
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] tracking-[0.15em] uppercase text-[var(--color-stone)] mb-1.5">Provincia *</label>
+                <div className="relative">
+                  <select
+                    className="w-full px-3 py-2.5 border border-[var(--color-border)] bg-white text-sm focus:outline-none focus:border-[var(--color-charcoal)] transition-colors appearance-none"
+                    value={form.provincia} onChange={e => set('provincia', e.target.value)} required
+                  >
+                    <option value="">Seleccioná una provincia</option>
+                    {PROVINCIAS.map(p => <option key={p} value={p}>{p}</option>)}
+                  </select>
+                  <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] tracking-[0.15em] uppercase text-[var(--color-stone)] mb-1.5">Localidad *</label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2.5 border border-[var(--color-border)] bg-white text-sm focus:outline-none focus:border-[var(--color-charcoal)] transition-colors"
+                  placeholder="Ej: Mar del Plata"
+                  value={form.localidad}
+                  onChange={e => set('localidad', e.target.value)}
+                  required
                 />
               </div>
             </>
@@ -175,21 +243,32 @@ export default function RegistroPage() {
           {/* Contraseña */}
           <div>
             <label className="block text-[10px] tracking-[0.15em] uppercase text-[var(--color-stone)] mb-1.5">Contraseña *</label>
-            <input
-              type="password"
-              className="w-full px-3 py-2.5 border border-[var(--color-border)] bg-white text-sm focus:outline-none focus:border-[var(--color-charcoal)] transition-colors"
-              value={form.password} onChange={e => set('password', e.target.value)}
-              required minLength={8} placeholder="Mínimo 8 caracteres"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                className="w-full px-3 py-2.5 pr-10 border border-[var(--color-border)] bg-white text-sm focus:outline-none focus:border-[var(--color-charcoal)] transition-colors"
+                value={form.password} onChange={e => set('password', e.target.value)} required minLength={8} placeholder="Mínimo 8 caracteres"
+              />
+              <button type="button" onClick={() => setShowPassword(v => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-stone)] hover:text-[var(--color-charcoal)] transition-colors">
+                <EyeIcon open={showPassword} />
+              </button>
+            </div>
           </div>
+
           <div>
             <label className="block text-[10px] tracking-[0.15em] uppercase text-[var(--color-stone)] mb-1.5">Confirmar Contraseña *</label>
-            <input
-              type="password"
-              className="w-full px-3 py-2.5 border border-[var(--color-border)] bg-white text-sm focus:outline-none focus:border-[var(--color-charcoal)] transition-colors"
-              value={form.confirmar} onChange={e => set('confirmar', e.target.value)}
-              required minLength={8}
-            />
+            <div className="relative">
+              <input
+                type={showConfirmar ? 'text' : 'password'}
+                className="w-full px-3 py-2.5 pr-10 border border-[var(--color-border)] bg-white text-sm focus:outline-none focus:border-[var(--color-charcoal)] transition-colors"
+                value={form.confirmar} onChange={e => set('confirmar', e.target.value)} required minLength={8}
+              />
+              <button type="button" onClick={() => setShowConfirmar(v => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-stone)] hover:text-[var(--color-charcoal)] transition-colors">
+                <EyeIcon open={showConfirmar} />
+              </button>
+            </div>
           </div>
 
           {/* Turnstile */}
