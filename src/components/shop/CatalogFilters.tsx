@@ -1,8 +1,8 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useCallback, useRef, useState } from 'react'
-import { Search, X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useCallback, useState } from 'react'
+import { Search, X } from 'lucide-react'
 import { getColorHex, isLightColor } from '@/lib/colors'
 
 interface Subcategory {
@@ -40,10 +40,6 @@ export default function CatalogFilters({
   currentPrecioMin, currentPrecioMax, currentDescuento,
 }: CatalogFiltersProps) {
   const router = useRouter()
-  const colorScrollRef = useRef<HTMLDivElement>(null)
-  const scrollColors = (dir: 1 | -1) => {
-    colorScrollRef.current?.scrollBy({ left: dir * 96, behavior: 'smooth' })
-  }
   const [q, setQ] = useState(currentQ ?? '')
   const [precioMin, setPrecioMin] = useState(String(currentPrecioMin ?? ''))
   const [precioMax, setPrecioMax] = useState(String(currentPrecioMax ?? ''))
@@ -181,58 +177,35 @@ export default function CatalogFilters({
         </ul>
       </div>
 
-      {/* Colores — franja horizontal con slide, tamaño fijo aunque crezca la lista */}
+      {/* Colores — franja horizontal con scroll, tamaño fijo aunque crezca la lista */}
       {availableColors.length > 0 && (
         <div>
           <p className="text-[10px] tracking-[0.2em] uppercase text-[var(--color-stone)] mb-3">Color</p>
-          <div className="relative">
-            {availableColors.length > 6 && (
-              <button
-                type="button"
-                onClick={() => scrollColors(-1)}
-                aria-label="Ver colores anteriores"
-                className="absolute -left-1 top-1/2 -translate-y-1/2 z-10 w-5 h-5 flex items-center justify-center bg-white/90 rounded-full shadow-sm text-[var(--color-charcoal)] hover:bg-white"
-              >
-                <ChevronLeft size={12} />
-              </button>
-            )}
-            <div
-              ref={colorScrollRef}
-              className="flex gap-2 overflow-x-auto scroll-smooth py-1"
-              style={{ scrollbarWidth: 'thin' }}
-            >
-              {availableColors.map(color => {
-                const hex = getColorHex(color)
-                const light = isLightColor(hex)
-                const active = currentColor === color
-                return (
-                  <button
-                    key={color}
-                    title={color}
-                    onClick={() => router.push(buildUrl({ color: active ? undefined : color }))}
-                    style={{ backgroundColor: hex }}
-                    className={`w-6 h-6 rounded-full transition-all flex-shrink-0 ${active ? 'ring-2 ring-offset-1 ring-[var(--color-charcoal)] scale-110' : 'hover:scale-110'}`}
-                    aria-label={color}
-                  >
-                    {active && (
-                      <span className="flex items-center justify-center w-full h-full">
-                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: light ? '#333' : '#fff', display: 'block' }} />
-                      </span>
-                    )}
-                  </button>
-                )
-              })}
-            </div>
-            {availableColors.length > 6 && (
-              <button
-                type="button"
-                onClick={() => scrollColors(1)}
-                aria-label="Ver más colores"
-                className="absolute -right-1 top-1/2 -translate-y-1/2 z-10 w-5 h-5 flex items-center justify-center bg-white/90 rounded-full shadow-sm text-[var(--color-charcoal)] hover:bg-white"
-              >
-                <ChevronRight size={12} />
-              </button>
-            )}
+          <div
+            className="color-scroll flex gap-2 overflow-x-auto pt-1 pb-2"
+            style={{ scrollbarWidth: 'thin', scrollbarColor: 'var(--color-border) transparent' }}
+          >
+            {availableColors.map(color => {
+              const hex = getColorHex(color)
+              const light = isLightColor(hex)
+              const active = currentColor === color
+              return (
+                <button
+                  key={color}
+                  title={color}
+                  onClick={() => router.push(buildUrl({ color: active ? undefined : color }))}
+                  style={{ backgroundColor: hex }}
+                  className={`w-6 h-6 rounded-full transition-all flex-shrink-0 ${active ? 'ring-2 ring-offset-1 ring-[var(--color-charcoal)] scale-110' : 'hover:scale-110'}`}
+                  aria-label={color}
+                >
+                  {active && (
+                    <span className="flex items-center justify-center w-full h-full">
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: light ? '#333' : '#fff', display: 'block' }} />
+                    </span>
+                  )}
+                </button>
+              )
+            })}
           </div>
           {currentColor && (
             <p className="text-xs text-[var(--color-stone)] mt-2 capitalize">{currentColor}</p>

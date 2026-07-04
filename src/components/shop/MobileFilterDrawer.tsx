@@ -1,8 +1,8 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { X, SlidersHorizontal, ChevronLeft, ChevronRight } from 'lucide-react'
+import { X, SlidersHorizontal } from 'lucide-react'
 import { getColorHex, isLightColor } from '@/lib/colors'
 
 interface Subcategory {
@@ -41,10 +41,6 @@ export default function MobileFilterDrawer({
   const [precioMin, setPrecioMin] = useState(String(currentPrecioMin ?? ''))
   const [precioMax, setPrecioMax] = useState(String(currentPrecioMax ?? ''))
   const router = useRouter()
-  const colorScrollRef = useRef<HTMLDivElement>(null)
-  const scrollColors = (dir: 1 | -1) => {
-    colorScrollRef.current?.scrollBy({ left: dir * 100, behavior: 'smooth' })
-  }
 
   function buildUrl(overrides: Record<string, string | undefined>) {
     const p: Record<string, string> = {}
@@ -133,42 +129,31 @@ export default function MobileFilterDrawer({
                 </ul>
               </div>
 
-              {/* Colores — franja horizontal con slide, tamaño fijo aunque crezca la lista */}
+              {/* Colores — franja horizontal con scroll, tamaño fijo aunque crezca la lista */}
               {availableColors.length > 0 && (
                 <div>
                   <p className="text-[10px] tracking-[0.2em] uppercase text-[var(--color-stone)] mb-3">Color</p>
-                  <div className="relative">
-                    {availableColors.length > 8 && (
-                      <button type="button" onClick={() => scrollColors(-1)} aria-label="Ver colores anteriores"
-                        className="absolute -left-1 top-1/2 -translate-y-1/2 z-10 w-6 h-6 flex items-center justify-center bg-white/90 rounded-full shadow-sm text-[var(--color-charcoal)]">
-                        <ChevronLeft size={13} />
-                      </button>
-                    )}
-                    <div ref={colorScrollRef} className="flex gap-2 overflow-x-auto scroll-smooth py-1" style={{ scrollbarWidth: 'thin' }}>
-                      {availableColors.map(color => {
-                        const hex = getHex(color)
-                        const light = isLight(hex)
-                        const active = currentColor === color
-                        return (
-                          <button key={color} title={color}
-                            onClick={() => go(buildUrl({color: active ? undefined : color}))}
-                            style={{backgroundColor: hex}}
-                            className={`w-7 h-7 rounded-full transition-all flex-shrink-0 ${active ? 'ring-2 ring-offset-1 ring-[var(--color-charcoal)] scale-110' : ''}`}
-                            aria-label={color}
-                          >
-                            {active && <span className="flex items-center justify-center w-full h-full">
-                              <span style={{width:7,height:7,borderRadius:'50%',background:light?'#333':'#fff',display:'block'}} />
-                            </span>}
-                          </button>
-                        )
-                      })}
-                    </div>
-                    {availableColors.length > 8 && (
-                      <button type="button" onClick={() => scrollColors(1)} aria-label="Ver más colores"
-                        className="absolute -right-1 top-1/2 -translate-y-1/2 z-10 w-6 h-6 flex items-center justify-center bg-white/90 rounded-full shadow-sm text-[var(--color-charcoal)]">
-                        <ChevronRight size={13} />
-                      </button>
-                    )}
+                  <div
+                    className="color-scroll flex gap-2 overflow-x-auto pt-1 pb-2"
+                    style={{ scrollbarWidth: 'thin', scrollbarColor: 'var(--color-border) transparent' }}
+                  >
+                    {availableColors.map(color => {
+                      const hex = getHex(color)
+                      const light = isLight(hex)
+                      const active = currentColor === color
+                      return (
+                        <button key={color} title={color}
+                          onClick={() => go(buildUrl({color: active ? undefined : color}))}
+                          style={{backgroundColor: hex}}
+                          className={`w-7 h-7 rounded-full transition-all flex-shrink-0 ${active ? 'ring-2 ring-offset-1 ring-[var(--color-charcoal)] scale-110' : ''}`}
+                          aria-label={color}
+                        >
+                          {active && <span className="flex items-center justify-center w-full h-full">
+                            <span style={{width:7,height:7,borderRadius:'50%',background:light?'#333':'#fff',display:'block'}} />
+                          </span>}
+                        </button>
+                      )
+                    })}
                   </div>
                   {currentColor && <p className="text-xs text-[var(--color-stone)] mt-2 capitalize">{currentColor}</p>}
                 </div>

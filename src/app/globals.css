@@ -85,3 +85,8 @@ body {
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--color-white); }
 ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 2px; }
+
+/* Scroll horizontal de la franja de colores (filtros tienda) */
+.color-scroll::-webkit-scrollbar { height: 5px; }
+.color-scroll::-webkit-scrollbar-track { background: transparent; }
+.color-scroll::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
