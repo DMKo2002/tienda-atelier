@@ -49,14 +49,10 @@ export default function ProductCard({
           </div>
         )}
 
-        {/* Badge nuevo / descuento */}
-        {discountPct ? (
+        {/* Badge descuento */}
+        {discountPct && (
           <div className="absolute top-2 left-2 bg-[var(--color-accent)] text-white text-[10px] font-bold tracking-[0.08em] uppercase px-2 py-1">
             SALE
-          </div>
-        ) : (
-          <div className="absolute top-2 left-2 bg-[var(--color-black)] text-white text-[10px] font-bold tracking-[0.08em] uppercase px-2 py-1">
-            NEW
           </div>
         )}
       </div>
