@@ -90,3 +90,12 @@ body {
 .color-scroll::-webkit-scrollbar { height: 5px; }
 .color-scroll::-webkit-scrollbar-track { background: transparent; }
 .color-scroll::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+
+/* Scroll sin barra visible (se puede seguir navegando con mouse/trackpad, solo se oculta la línea) */
+.scrollbar-hidden {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
