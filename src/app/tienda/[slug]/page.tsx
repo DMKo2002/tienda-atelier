@@ -9,6 +9,12 @@ interface Props {
   params: { slug: string }
 }
 
+// Evita que Vercel/Next.js cachee esta página o los datos de Supabase entre
+// deploys — sin esto, cambios en store_config (ignore_stock, etc.) pueden no
+// reflejarse aunque el código y la base de datos ya estén actualizados.
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export async function generateMetadata({ params }: Props) {
   const supabase = await createServerSupabase()
   const [{ data: tenantData }, { data }] = await Promise.all([
@@ -62,7 +68,7 @@ export default async function ProductoPage({ params }: Props) {
   const { data: tenant } = await supabase.from('tenants').select('name').eq('id', TENANT_ID()).single()
   const { data: config } = await supabase
     .from('store_config')
-    .select('logo_url, whatsapp_number, notification_email, price_visibility')
+    .select('logo_url, whatsapp_number, notification_email, price_visibility, ignore_stock')
     .eq('tenant_id', TENANT_ID())
     .single()
 
@@ -189,6 +195,11 @@ export default async function ProductoPage({ params }: Props) {
               {/* Separador */}
               <div className="w-full h-px bg-[var(--color-border)] mb-8" />
 
+              {/* DEBUG TEMPORAL — sacar después de diagnosticar */}
+              <p style={{ fontSize: 11, color: 'red', background: '#fee', padding: 8, marginBottom: 12, wordBreak: 'break-all' }}>
+                DEBUG · TENANT_ID={String(TENANT_ID())} · config_existe={String(!!config)} · ignore_stock={String((config as any)?.ignore_stock)} (tipo: {typeof (config as any)?.ignore_stock})
+              </p>
+
               {/* Selector de variante + agregar al carrito */}
               <AddToCartButton
                 product={{
@@ -200,6 +211,7 @@ export default async function ProductoPage({ params }: Props) {
                 sizes={sizes as string[]}
                 colors={colors as string[]}
                 showPrices={showPrices}
+                ignoreStock={(config as any)?.ignore_stock ?? false}
               />
 
               {/* Separador */}

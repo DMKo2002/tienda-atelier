@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useCart } from './CartContext'
 import { ShoppingBag, Check } from 'lucide-react'
+import { getColorHex, isLightColor } from '@/lib/colors'
 
 interface Variant {
   id: string
@@ -14,6 +15,10 @@ interface Variant {
 
 interface AddToCartButtonProps {
   showPrices?: boolean
+  // Cuando está prendido en la config de tienda ("Modo sin stock"), todos los
+  // productos deben aparecer disponibles sin importar el stock cargado —
+  // pensado para mayoristas que manejan disponibilidad real por WhatsApp.
+  ignoreStock?: boolean
   product: {
     id: string
     name: string
@@ -27,31 +32,7 @@ interface AddToCartButtonProps {
 const formatPrice = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n)
 
-const COLOR_MAP: Record<string, string> = {
-  negro: '#1C1C1C', blanco: '#F5F5F0', crema: '#F0EBE1', beige: '#D4C5A9',
-  marfil: '#FFFFF0', gris: '#9E9E9E', 'gris claro': '#D0D0D0', 'gris oscuro': '#555555',
-  rojo: '#C0392B', bordo: '#7B2D42', vino: '#6B2737', rosa: '#E8A0B0',
-  coral: '#E8714A', naranja: '#E8813A', mostaza: '#C8A84B', amarillo: '#F0CC4A',
-  azul: '#3A7BC8', 'azul marino': '#1B3A6B', 'azul claro': '#7EB8E0', celeste: '#87CEEB',
-  verde: '#4A9B6F', 'verde oscuro': '#2D6A4F', esmeralda: '#2E8B6E', turquesa: '#3AADA8',
-  lila: '#B09BC8', violeta: '#8E44AD', morado: '#6C3483',
-  camel: '#C19A6B', tabaco: '#8B6355', chocolate: '#5C3A1E', tiza: '#E8E4DC',
-}
-
-function getColorHex(name: string): string {
-  const trimmed = name.trim()
-  if (/^#[0-9A-Fa-f]{3,6}$/.test(trimmed)) return trimmed
-  return COLOR_MAP[trimmed.toLowerCase()] ?? '#CCCCCC'
-}
-
-function isLight(hex: string): boolean {
-  const r = parseInt(hex.slice(1, 3), 16)
-  const g = parseInt(hex.slice(3, 5), 16)
-  const b = parseInt(hex.slice(5, 7), 16)
-  return (r * 299 + g * 587 + b * 114) / 1000 > 180
-}
-
-export default function AddToCartButton({ product, sizes, colors, showPrices = true }: AddToCartButtonProps) {
+export default function AddToCartButton({ product, sizes, colors, showPrices = true, ignoreStock = false }: AddToCartButtonProps) {
   const { addItem } = useCart()
   const [selectedSize, setSelectedSize] = useState<string | null>(sizes[0] ?? null)
   const [selectedColor, setSelectedColor] = useState<string | null>(colors[0] ?? null)
@@ -71,6 +52,7 @@ export default function AddToCartButton({ product, sizes, colors, showPrices = t
 
   // Helper: is a size available with any color (or the selected color)?
   function isSizeAvailable(size: string): boolean {
+    if (ignoreStock) return true
     if (colors.length === 0) return getVariantStock(size, null) > 0
     // If a color is selected, check only that color+size combo
     if (selectedColor) return getVariantStock(size, selectedColor) > 0
@@ -80,6 +62,7 @@ export default function AddToCartButton({ product, sizes, colors, showPrices = t
 
   // Helper: is a color available with any size (or the selected size)?
   function isColorAvailable(color: string): boolean {
+    if (ignoreStock) return true
     if (sizes.length === 0) return getVariantStock(null, color) > 0
     if (selectedSize) return getVariantStock(selectedSize, color) > 0
     return sizes.some(s => getVariantStock(s, color) > 0)
@@ -93,7 +76,7 @@ export default function AddToCartButton({ product, sizes, colors, showPrices = t
 
   const retailPrice = selectedVariant?.price_rules?.find(p => p.type === 'retail' && p.active)?.price
   const wholesalePrice = selectedVariant?.price_rules?.find(p => p.type === 'wholesale' && p.active)
-  const inStock = (selectedVariant?.stock ?? 0) > 0
+  const inStock = ignoreStock || (selectedVariant?.stock ?? 0) > 0
 
   const effectivePrice = wholesalePrice && quantity >= wholesalePrice.min_qty
     ? wholesalePrice.price
@@ -105,10 +88,12 @@ export default function AddToCartButton({ product, sizes, colors, showPrices = t
   function handleAddToCart() {
     if (!selectedVariant || !effectivePrice) return
     const maxStock = selectedVariant.stock ?? 0
-    if (maxStock === 0) return
-    if (quantity > maxStock) {
-      setStockError(maxStock === 1 ? 'Solo queda 1 unidad disponible' : `Solo quedan ${maxStock} unidades disponibles`)
-      return
+    if (!ignoreStock) {
+      if (maxStock === 0) return
+      if (quantity > maxStock) {
+        setStockError(maxStock === 1 ? 'Solo queda 1 unidad disponible' : `Solo quedan ${maxStock} unidades disponibles`)
+        return
+      }
     }
     addItem({
       variantId: selectedVariant.id,
@@ -143,7 +128,7 @@ export default function AddToCartButton({ product, sizes, colors, showPrices = t
           <div className="flex gap-2.5 flex-wrap">
             {colors.map(color => {
               const hex = getColorHex(color)
-              const light = isLight(hex)
+              const light = isLightColor(hex)
               const selected = selectedColor === color
               const available = isColorAvailable(color)
               return (
@@ -230,7 +215,7 @@ export default function AddToCartButton({ product, sizes, colors, showPrices = t
           <button
             onClick={() => {
               const maxStock = selectedVariant?.stock ?? 0
-              if (quantity >= maxStock) {
+              if (!ignoreStock && quantity >= maxStock) {
                 setStockError(maxStock === 1 ? 'Solo queda 1 unidad disponible' : `Solo quedan ${maxStock} unidades disponibles`)
               } else {
                 setQuantity(q => q + 1)

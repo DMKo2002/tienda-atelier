@@ -20,6 +20,11 @@ interface Props {
 
 export const metadata = { title: 'Tienda' }
 
+// Evita que Vercel/Next.js cachee esta página o los datos de Supabase entre
+// deploys — ver misma nota en tienda/[slug]/page.tsx
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function TiendaPage({ searchParams }: Props) {
   // Read cookies synchronously BEFORE any await (cookies() loses context after await in Next.js 14)
   const cookieStore = cookies()

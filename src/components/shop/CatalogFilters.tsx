@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useCallback, useState } from 'react'
 import { Search, X } from 'lucide-react'
+import { getColorHex, isLightColor } from '@/lib/colors'
 
 interface Subcategory {
   id: string
@@ -31,29 +32,6 @@ interface CatalogFiltersProps {
   currentPrecioMin?: number
   currentPrecioMax?: number
   currentDescuento?: boolean
-}
-
-const COLOR_MAP: Record<string, string> = {
-  negro: '#1C1C1C', blanco: '#F5F5F0', crema: '#F0EBE1', beige: '#D4C5A9',
-  marfil: '#FFFFF0', gris: '#9E9E9E', 'gris claro': '#D0D0D0', 'gris oscuro': '#555555',
-  rojo: '#C0392B', bordo: '#7B2D42', vino: '#6B2737', rosa: '#E8A0B0',
-  coral: '#E8714A', naranja: '#E8813A', mostaza: '#C8A84B', amarillo: '#F0CC4A',
-  azul: '#3A7BC8', 'azul marino': '#1B3A6B', 'azul claro': '#7EB8E0', celeste: '#87CEEB',
-  verde: '#4A9B6F', 'verde oscuro': '#2D6A4F', esmeralda: '#2E8B6E', turquesa: '#3AADA8',
-  lila: '#B09BC8', violeta: '#8E44AD', morado: '#6C3483',
-  camel: '#C19A6B', tabaco: '#8B6355', chocolate: '#5C3A1E', tiza: '#E8E4DC', off: '#F5F2EC',
-}
-
-function getColorHex(name: string): string {
-  const trimmed = name.trim()
-  if (/^#[0-9A-Fa-f]{3,6}$/.test(trimmed)) return trimmed
-  return COLOR_MAP[trimmed.toLowerCase()] ?? '#CCCCCC'
-}
-function isLight(hex: string): boolean {
-  const r = parseInt(hex.slice(1, 3), 16)
-  const g = parseInt(hex.slice(3, 5), 16)
-  const b = parseInt(hex.slice(5, 7), 16)
-  return (r * 299 + g * 587 + b * 114) / 1000 > 180
 }
 
 export default function CatalogFilters({
@@ -206,7 +184,7 @@ export default function CatalogFilters({
           <div className="flex flex-wrap gap-2">
             {availableColors.map(color => {
               const hex = getColorHex(color)
-              const light = isLight(hex)
+              const light = isLightColor(hex)
               const active = currentColor === color
               return (
                 <button
