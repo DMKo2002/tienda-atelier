@@ -144,7 +144,7 @@ export default async function ProductoPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Navbar storeName={storeName} logoUrl={config?.logo_url} />
+      <Navbar storeName={storeName} logoUrl={config?.logo_url} textColor="black" />
 
       <main className="pt-24 min-h-screen">
         <div className="max-w-7xl mx-auto px-6 py-12">

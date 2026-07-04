@@ -204,7 +204,7 @@ export default async function TiendaPage({ searchParams }: Props) {
 
   return (
     <>
-      <Navbar storeName={storeName} logoUrl={config?.logo_url} />
+      <Navbar storeName={storeName} logoUrl={config?.logo_url} textColor="black" />
 
       <main className="pt-28">
 
