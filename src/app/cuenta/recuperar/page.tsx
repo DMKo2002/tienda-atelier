@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { createBrowserClient } from '@supabase/ssr'
 
 export default function RecuperarPage() {
   const [email, setEmail] = useState('')
@@ -10,35 +9,28 @@ export default function RecuperarPage() {
   const [enviado, setEnviado] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
     setLoading(true)
 
-    const origin = window.location.origin
-    const { error: authError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${origin}/auth/callback?next=/cuenta/recuperar/confirmar`,
-    })
-
-    setLoading(false)
-
-    if (authError) {
-      // El error más común es que la redirectTo URL no esté en la whitelist de Supabase
-      const msg = authError.message.toLowerCase()
-      if (msg.includes('redirect') || msg.includes('url')) {
-        setError('Error de configuración: el dominio no está autorizado en Supabase. Contactá al administrador.')
-      } else {
-        setError(authError.message)
+    try {
+      const res = await fetch('/api/auth/recuperar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error ?? 'Error al enviar el email. Intentá de nuevo.')
+        return
       }
-      return
+      setEnviado(true)
+    } catch {
+      setError('Error de conexión. Intentá de nuevo.')
+    } finally {
+      setLoading(false)
     }
-
-    setEnviado(true)
   }
 
   if (enviado) {
