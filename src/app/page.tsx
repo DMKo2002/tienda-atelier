@@ -204,8 +204,8 @@ export default async function HomePage() {
         <section className="max-w-7xl mx-auto px-6 py-16">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {[
-              { title: 'Envío gratis', desc: 'En compras que superen el monto mínimo. Entrega rápida y segura a todo el país.' },
-              { title: 'Devoluciones', desc: 'Tenés 14 días para devolver o cambiar tu pedido si no quedás satisfecho.' },
+              { title: 'Envío a todo el país', desc: 'En compras que superen el monto mínimo. Entrega rápida y segura a todo el país.' },
+              { title: 'Compra Segura', desc: 'Garantizamos una experiencia de compra segura de principio a fin.' },
               { title: 'Atención al cliente', desc: 'Estamos disponibles para ayudarte en todo momento por WhatsApp e email.' },
             ].map((feat, i) => (
               <div key={i} className="flex gap-4 items-start">
