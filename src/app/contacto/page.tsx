@@ -62,7 +62,7 @@ export default function ContactPage() {
 
   return (
     <>
-      <Navbar storeName={storeName} logoUrl={logoUrl} />
+      <Navbar storeName={storeName} logoUrl={logoUrl} textColor="black" />
 
       <main className="pt-28 pb-0 min-h-screen bg-white">
 

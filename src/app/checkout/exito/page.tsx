@@ -24,7 +24,7 @@ export default async function CheckoutExitoPage({
 
   return (
     <>
-      <Navbar storeName={tenant?.name} logoUrl={config?.logo_url} />
+      <Navbar storeName={tenant?.name} logoUrl={config?.logo_url} textColor="black" />
       <main className="pt-28 min-h-screen flex items-center justify-center">
         <div className="text-center max-w-md px-6">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-50 rounded-full mb-6">
