@@ -11,26 +11,26 @@ import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 const COLLECTION_PALETTES = [
-  { bg: '#E8E0D8', text: '#1A1A1A' },
-  { bg: '#D8E0E8', text: '#1A1A1A' },
-  { bg: '#D8E8DE', text: '#1A1A1A' },
+  { bg: '#E3E0DA', text: '#1A1A1A' },
+  { bg: '#C3C2BB', text: '#1A1A1A' },
+  { bg: '#A4A49C', text: '#1A1A1A' },
 ]
 
 const BLOG_DEFAULTS = [
   {
     title: 'Tendencias de temporada',
     excerpt: 'Descubrí las piezas clave que definen la moda de esta temporada y cómo combinarlas para crear looks únicos.',
-    bg: '#E8E4DC',
+    bg: '#E3E0DA',
   },
   {
     title: 'Guía de talles y ajuste',
     excerpt: 'Todo lo que necesitás saber para elegir el talle perfecto y conseguir el ajuste ideal en cada prenda.',
-    bg: '#D8DDE8',
+    bg: '#C3C2BB',
   },
   {
     title: 'Cuidado de prendas',
     excerpt: 'Consejos esenciales para mantener tus prendas favoritas en perfecto estado temporada tras temporada.',
-    bg: '#D8E8D8',
+    bg: '#A4A49C',
   },
 ]
 
@@ -118,7 +118,7 @@ export default async function HomePage() {
     date: today,
   }))
 
-  const newsletterBgColor = (config as any)?.newsletter_bg_color || '#DBD1BA'
+  const newsletterBgColor = (config as any)?.newsletter_bg_color || '#E3E0DA'
 
   return (
     <>
