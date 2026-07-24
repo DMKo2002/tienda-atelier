@@ -364,7 +364,7 @@ export default async function HomePage() {
         {/* ── NEWSLETTER ───────────────────────────────────────── */}
         <section className="py-20 px-6" style={{ backgroundColor: newsletterBgColor }}>
           <div className="max-w-xl mx-auto text-center">
-            <h2 className="text-2xl md:text-3xl font-bold mb-6" style={{ color: '#1A1A1A' }}>
+            <h2 className="text-base md:text-xl font-bold mb-6" style={{ color: '#1A1A1A' }}>
               Recibí las últimas novedades
             </h2>
             <div className="flex items-center bg-[#FFFCFA] rounded-md overflow-hidden border border-black/5 max-w-md mx-auto">
