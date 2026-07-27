@@ -1,4 +1,4 @@
 {
-  "installCommand": "git config --global url.\"https://${GH_TOKEN}@github.com/\".insteadOf \"ssh://git@github.com/\" && git config --global url.\"https://${GH_TOKEN}@github.com/\".insteadOf \"git@github.com:\" && rm -rf node_modules/@creart/tienda-core && npm install",
+  "installCommand": "rm -rf node_modules/@creart/tienda-core && GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=url.\"https://${GH_TOKEN}@github.com/\".insteadOf GIT_CONFIG_VALUE_0=ssh://git@github.com/ npm install",
   "buildCommand": "rm -rf .next/cache && next build"
 }
