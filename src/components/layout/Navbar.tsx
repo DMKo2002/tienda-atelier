@@ -132,6 +132,9 @@ export default function Navbar({ storeName = 'ATELIER', logoUrl, instagramUrl, f
 
           {/* Mobile */}
           <div className="md:hidden flex items-center gap-4 ml-auto">
+            <Link href="/cuenta" style={{ color }} aria-label="Cuenta">
+              <User size={20} strokeWidth={1.5} />
+            </Link>
             <Link href="/carrito" className="relative" style={{ color }}>
               <ShoppingBag size={20} strokeWidth={1.5} />
               {count > 0 && (
@@ -160,6 +163,13 @@ export default function Navbar({ storeName = 'ATELIER', logoUrl, instagramUrl, f
               {link.label}
             </Link>
           ))}
+          <Link
+            href="/cuenta"
+            onClick={() => setMenuOpen(false)}
+            className="text-2xl font-bold tracking-widest uppercase text-[var(--color-black)] hover:text-[var(--color-accent)] transition-colors"
+          >
+            Cuenta
+          </Link>
         </div>
       )}
     </>
