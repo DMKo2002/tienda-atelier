@@ -8,6 +8,7 @@ import Footer from '@/components/layout/Footer'
 import ProductCard from '@/components/shop/ProductCard'
 import HeroThumbnails from '@/components/shop/HeroThumbnails'
 import Link from 'next/link'
+import Image from 'next/image'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 const COLLECTION_PALETTES = [
@@ -139,10 +140,13 @@ export default async function HomePage() {
           {/* Imagen principal — 100% en mobile, 81% en desktop */}
           <div className="absolute left-0 top-0 bottom-0 w-full md:w-[81%] overflow-hidden group/hero">
             {heroImgUrl ? (
-              <img
+              <Image
                 src={heroImgUrl}
                 alt="Hero"
-                className="w-full h-full object-cover transition-transform duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/hero:scale-[1.12]"
+                fill
+                sizes="(max-width: 768px) 100vw, 81vw"
+                priority
+                className="object-cover transition-transform duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/hero:scale-[1.12]"
               />
             ) : (
               <div className="w-full h-full bg-[#E0D8CE]" />
@@ -235,10 +239,12 @@ export default async function HomePage() {
                   style={{ backgroundColor: col.palette.bg }}
                 >
                   {colImg && (
-                    <img
+                    <Image
                       src={colImg}
                       alt={col.name}
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
                     />
                   )}
                   <div className="absolute inset-0 bg-black/5 group-hover:bg-black/20 transition-colors" />
@@ -340,10 +346,12 @@ export default async function HomePage() {
                 <article key={i} className="group cursor-pointer">
                   <div className="aspect-[4/3] mb-5 overflow-hidden relative" style={{ backgroundColor: post.bg }}>
                     {blogImg && (
-                      <img
+                      <Image
                         src={blogImg}
                         alt={post.title}
-                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                        fill
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                        className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
                       />
                     )}
                   </div>

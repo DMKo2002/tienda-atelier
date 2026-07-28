@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface HeroThumbnailsProps {
@@ -33,7 +34,7 @@ export default function HeroThumbnails({ thumb1, thumb2 }: HeroThumbnailsProps) 
           onClick={swap}
         >
           {thumb1 ? (
-            <img src={thumb1} alt="" className="w-full h-full object-cover" />
+            <Image src={thumb1} alt="" fill sizes="18.5vw" className="object-cover" />
           ) : (
             <div className="w-full h-full bg-[#8B7355]" />
           )}
@@ -44,7 +45,7 @@ export default function HeroThumbnails({ thumb1, thumb2 }: HeroThumbnailsProps) 
           onClick={swap}
         >
           {thumb2 ? (
-            <img src={thumb2} alt="" className="w-full h-full object-cover" />
+            <Image src={thumb2} alt="" fill sizes="18.5vw" className="object-cover" />
           ) : (
             <div className="w-full h-full bg-[#7B3535]" />
           )}

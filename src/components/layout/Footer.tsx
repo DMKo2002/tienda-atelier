@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface Branch {
   name: string
@@ -71,7 +72,9 @@ export default function Footer({
           {/* Marca + social */}
           <div className="md:col-span-1">
             {logoUrl ? (
-              <img src={logoUrl} alt={storeName} className="max-h-8 w-auto object-contain mb-4" />
+              <span className="relative block h-8 w-32 mb-4">
+                <Image src={logoUrl} alt={storeName} fill sizes="128px" className="object-contain object-left" />
+              </span>
             ) : (
               <p className="text-lg font-bold tracking-tight text-[var(--color-black)] mb-4">
                 {storeName}
