@@ -45,6 +45,17 @@ export default async function HomePage() {
 
   const { tenant, config } = await getStoreData(supabase, TENANT_ID())
 
+  // Apariencia de ESTA plantilla (hero, colores de tema, blog, newsletter):
+  // propia de Atelier, no vive en tienda-core — así cada template queda
+  // intercambiable a futuro sin arrastrar lógica de otras plantillas.
+  const { data: appearance } = await supabase
+    .from('store_config')
+    .select(
+      'collection_posts, collection_text_color, hero_eyebrow, hero_title_line1, hero_title_italic, hero_title_line3, hero_season, hero_subtitle, hero_text_color, hero_image_url, nav_text_color, blog_heading, blog_subheading, blog_posts, newsletter_bg_color'
+    )
+    .eq('tenant_id', TENANT_ID())
+    .single()
+
   const { data: assetsRows } = await supabase
     .from('store_assets')
     .select('slot, url')
@@ -75,7 +86,7 @@ export default async function HomePage() {
 
   // Título y bajada de cada banner: si el tenant los cargó a mano en el panel,
   // tienen prioridad sobre el nombre de categoría automático.
-  const rawCollectionPosts = (config as any)?.collection_posts
+  const rawCollectionPosts = (appearance as any)?.collection_posts
   const collections = Array.from({ length: 3 }, (_, i) => ({
     name: rawCollectionPosts?.[i]?.title || (categories as any)?.[i]?.name || ['Nueva Colección', 'Accesorios', 'Ropa'][i],
     subtitle: rawCollectionPosts?.[i]?.subtitle || 'Piezas seleccionadas para esta temporada.',
@@ -83,25 +94,25 @@ export default async function HomePage() {
     palette: COLLECTION_PALETTES[i],
   }))
 
-  const heroEyebrow = (config as any)?.hero_eyebrow ?? 'Fashion Exclusive Collection'
-  const heroLine1   = (config as any)?.hero_title_line1 ?? 'Nueva'
+  const heroEyebrow = (appearance as any)?.hero_eyebrow ?? 'Fashion Exclusive Collection'
+  const heroLine1   = (appearance as any)?.hero_title_line1 ?? 'Nueva'
   // Renglón 2 (itálica) — compat: si el tenant todavía tiene el viejo campo
   // "línea 3" sin fusionar en el panel, lo sumamos acá para no perder el texto.
-  const heroItalicBase = (config as any)?.hero_title_italic ?? 'Temporada'
-  const heroLegacyLine3 = (config as any)?.hero_title_line3 ?? ''
+  const heroItalicBase = (appearance as any)?.hero_title_italic ?? 'Temporada'
+  const heroLegacyLine3 = (appearance as any)?.hero_title_line3 ?? ''
   const heroItalic  = heroLegacyLine3 ? `${heroItalicBase} ${heroLegacyLine3}`.trim() : heroItalicBase
-  const heroSeason  = (config as any)?.hero_season ?? 'AW'
-  const heroSubtitle = (config as any)?.hero_subtitle ?? 'Piezas únicas diseñadas para\nquienes buscan estilo y distinción.'
-  const customColor = (config as any)?.hero_text_color
-  const heroImgUrl  = asset('hero_main') ?? config?.hero_image_url ?? null
+  const heroSeason  = (appearance as any)?.hero_season ?? 'AW'
+  const heroSubtitle = (appearance as any)?.hero_subtitle ?? 'Piezas únicas diseñadas para\nquienes buscan estilo y distinción.'
+  const customColor = (appearance as any)?.hero_text_color
+  const heroImgUrl  = asset('hero_main') ?? (appearance as any)?.hero_image_url ?? null
   // Color de texto de Colecciones: editable por tenant. Si no se configuró,
   // mantiene el comportamiento anterior (blanco sobre imagen, negro sin imagen).
-  const collectionTextColor = (config as any)?.collection_text_color || null
+  const collectionTextColor = (appearance as any)?.collection_text_color || null
 
   // Blog: título/bajada de la sección + título y texto de cada nota, editables en el panel.
-  const blogHeading = (config as any)?.blog_heading || 'Fashion news & tips'
-  const blogSubheading = (config as any)?.blog_subheading || 'Todo sobre moda, tendencias y cuidado de prendas'
-  const rawBlogPosts = (config as any)?.blog_posts
+  const blogHeading = (appearance as any)?.blog_heading || 'Fashion news & tips'
+  const blogSubheading = (appearance as any)?.blog_subheading || 'Todo sobre moda, tendencias y cuidado de prendas'
+  const rawBlogPosts = (appearance as any)?.blog_posts
   const today = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
   const blogPosts = BLOG_DEFAULTS.map((def, i) => ({
     title: rawBlogPosts?.[i]?.title || def.title,
@@ -110,7 +121,7 @@ export default async function HomePage() {
     date: today,
   }))
 
-  const newsletterBgColor = (config as any)?.newsletter_bg_color || '#E3E0DA'
+  const newsletterBgColor = (appearance as any)?.newsletter_bg_color || '#E3E0DA'
 
   return (
     <>
@@ -120,7 +131,7 @@ export default async function HomePage() {
         instagramUrl={(config as any)?.instagram_url ?? undefined}
         facebookUrl={(config as any)?.facebook_url ?? undefined}
         tiktokUrl={(config as any)?.tiktok_url ?? undefined}
-        textColor={(config as any)?.nav_text_color ?? undefined}
+        textColor={(appearance as any)?.nav_text_color ?? undefined}
       />
 
       <main>
