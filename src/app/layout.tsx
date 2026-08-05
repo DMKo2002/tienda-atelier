@@ -3,6 +3,7 @@ import './globals.css'
 import { CartProvider } from '@/components/shop/CartContext'
 import CookieBanner from '@/components/layout/CookieBanner'
 import NoImageDownload from '@/components/layout/NoImageDownload'
+import MinOrderBanner from '@/components/layout/MinOrderBanner'
 import { buildStoreMetadata } from '@creart/tienda-core/seo'
 
 // Metadata de la tienda centralizada en tienda-core — ver src/lib/seo.ts.
@@ -19,6 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="stylesheet" href="https://use.typekit.net/2587a79db946f40eae08ed270054b8a2be1f2ac5.css" />
       </head>
       <body className="overflow-x-hidden">
+        <MinOrderBanner />
         <CartProvider>
           {children}
           <CookieBanner />
