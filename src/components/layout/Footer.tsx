@@ -16,6 +16,7 @@ interface FooterProps {
   facebookUrl?: string
   tiktokUrl?: string
   branches?: Branch[]
+  pickupAddress?: string
 }
 
 function IconInstagram() {
@@ -60,6 +61,7 @@ export default function Footer({
   facebookUrl,
   tiktokUrl,
   branches = [],
+  pickupAddress,
 }: FooterProps) {
   const hasSocial = instagramUrl || facebookUrl || tiktokUrl || whatsapp
   const hasBranches = branches && branches.length > 0
@@ -121,6 +123,12 @@ export default function Footer({
 
           {/* Sucursales o info */}
           <div>
+            {pickupAddress && (
+              <div className="mb-4">
+                <p className="text-xs font-bold tracking-[0.15em] uppercase text-[var(--color-black)] mb-2">Dirección</p>
+                <p className="text-xs text-[var(--color-stone)] leading-relaxed">{pickupAddress}</p>
+              </div>
+            )}
             {hasBranches ? (
               <>
                 <p className="text-xs font-bold tracking-[0.15em] uppercase text-[var(--color-black)] mb-5">Sucursales</p>
