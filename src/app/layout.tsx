@@ -8,6 +8,9 @@ import GoogleAnalytics from '@creart/tienda-core/GoogleAnalytics'
 import MetaPixel from '@creart/tienda-core/MetaPixel'
 import GoogleAdsTag from '@creart/tienda-core/GoogleAdsTag'
 import TikTokPixel from '@creart/tienda-core/TikTokPixel'
+import { BotIdClient } from 'botid/client'
+import { BOTID_PROTECTED_ROUTES } from '@creart/tienda-core/botid-config'
+import VisitTracker from '@creart/tienda-core/VisitTracker'
 
 // Metadata de la tienda centralizada en tienda-core — ver src/lib/seo.ts.
 // El único dato propio de este template es la bajada de fallback (se usa
@@ -20,6 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es">
       <head>
+        <BotIdClient protect={BOTID_PROTECTED_ROUTES} />
         <link rel="stylesheet" href="https://use.typekit.net/2587a79db946f40eae08ed270054b8a2be1f2ac5.css" />
       </head>
       <body className="overflow-x-hidden">
@@ -31,6 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <MetaPixel />
           <GoogleAdsTag />
           <TikTokPixel />
+          <VisitTracker />
         </CartProvider>
         </body>
     </html>
