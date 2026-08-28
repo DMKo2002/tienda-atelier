@@ -182,7 +182,7 @@ export default function Footer({
             <a href="/politica-privacidad" className="text-[10px] tracking-widest uppercase text-[var(--color-gray)] hover:text-[var(--color-black)] transition-colors">Privacidad</a>
             <a href="/politica-cookies" className="text-[10px] tracking-widest uppercase text-[var(--color-gray)] hover:text-[var(--color-black)] transition-colors">Cookies</a>
             <a href="/terminos-condiciones" className="text-[10px] tracking-widest uppercase text-[var(--color-gray)] hover:text-[var(--color-black)] transition-colors">Términos</a>
-            <p className="text-[10px] tracking-widest uppercase text-[var(--color-gray)]">Desarrollado por gounuri</p>
+            <a href="https://www.gounuri.com" target="_blank" rel="noopener noreferrer" className="text-[10px] tracking-widest uppercase text-[var(--color-gray)] hover:text-[var(--color-black)] transition-colors">Desarrollado por gounuri</a>
           </div>
         </div>
       </div>
