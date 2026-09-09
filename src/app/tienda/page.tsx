@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { createServerSupabase, createServiceSupabase, TENANT_ID } from '@/lib/supabase-server'
 import { getStoreData } from '@creart/tienda-core/store-data'
 import Navbar from '@/components/layout/Navbar'
@@ -20,7 +21,7 @@ interface Props {
   }
 }
 
-export const metadata = { title: 'Tienda' }
+export const metadata: Metadata = { title: 'Tienda', alternates: { canonical: '/tienda' } }
 
 // Evita que Vercel/Next.js cachee esta página o los datos de Supabase entre
 // deploys — ver misma nota en tienda/[slug]/page.tsx
