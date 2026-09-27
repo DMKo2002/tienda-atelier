@@ -42,12 +42,12 @@ const BLOG_DEFAULTS = [
 
 export default async function HomePage() {
   // cookies() debe llamarse ANTES de cualquier await
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const isLoggedIn = cookieStore.getAll().some(c => c.name.includes('-auth-token') && (c.value?.length ?? 0) > 10)
 
   const supabase = await createServerSupabase()
 
-  const { tenant, config } = await getStoreData(supabase, TENANT_ID())
+  const { tenant, config } = await getStoreData(supabase, await TENANT_ID())
 
   // Apariencia de ESTA plantilla (hero, colores de tema, blog, newsletter):
   // propia de Atelier, no vive en tienda-core — así cada template queda
@@ -57,13 +57,13 @@ export default async function HomePage() {
     .select(
       'collection_posts, collection_text_color, hero_eyebrow, hero_title_line1, hero_title_italic, hero_title_line3, hero_season, hero_subtitle, hero_text_color, hero_image_url, nav_text_color, blog_heading, blog_subheading, blog_posts, newsletter_bg_color'
     )
-    .eq('tenant_id', TENANT_ID())
+    .eq('tenant_id', await TENANT_ID())
     .single()
 
   const { data: assetsRows } = await supabase
     .from('store_assets')
     .select('slot, url')
-    .eq('tenant_id', TENANT_ID())
+    .eq('tenant_id', await TENANT_ID())
 
   const asset = (slot: string): string | null =>
     assetsRows?.find(a => a.slot === slot)?.url ?? null
@@ -71,7 +71,7 @@ export default async function HomePage() {
   const { data: products } = await supabase
     .from('products')
     .select('id, name, slug, product_images(*), variants(price_rules(*))')
-    .eq('tenant_id', TENANT_ID())
+    .eq('tenant_id', await TENANT_ID())
     .eq('active', true)
     .order('sort_order', { ascending: true })
     .limit(5)
@@ -79,7 +79,7 @@ export default async function HomePage() {
   const { data: categories } = await supabase
     .from('categories')
     .select('id, name, slug')
-    .eq('tenant_id', TENANT_ID())
+    .eq('tenant_id', await TENANT_ID())
     .eq('active', true)
     .order('sort_order')
     .limit(3)
