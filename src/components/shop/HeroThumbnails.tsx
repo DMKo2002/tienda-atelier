@@ -34,7 +34,7 @@ export default function HeroThumbnails({ thumb1, thumb2 }: HeroThumbnailsProps) 
           onClick={swap}
         >
           {thumb1 ? (
-            <Image src={thumb1} alt="" fill sizes="18.5vw" className="object-cover" />
+            <Image src={thumb1} alt="" fill sizes="18.5vw" quality={90} className="object-cover" />
           ) : (
             <div className="w-full h-full bg-[#8B7355]" />
           )}
@@ -45,7 +45,7 @@ export default function HeroThumbnails({ thumb1, thumb2 }: HeroThumbnailsProps) 
           onClick={swap}
         >
           {thumb2 ? (
-            <Image src={thumb2} alt="" fill sizes="18.5vw" className="object-cover" />
+            <Image src={thumb2} alt="" fill sizes="18.5vw" quality={90} className="object-cover" />
           ) : (
             <div className="w-full h-full bg-[#7B3535]" />
           )}

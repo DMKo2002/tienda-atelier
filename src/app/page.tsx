@@ -151,6 +151,7 @@ export default async function HomePage() {
                 alt="Hero"
                 fill
                 sizes="(max-width: 768px) 100vw, 81vw"
+                quality={90}
                 priority
                 className="object-cover transition-transform duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/hero:scale-[1.12]"
               />
@@ -250,6 +251,7 @@ export default async function HomePage() {
                       alt={col.name}
                       fill
                       sizes="(max-width: 768px) 100vw, 33vw"
+                      quality={90}
                       className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
                     />
                   )}
@@ -357,6 +359,7 @@ export default async function HomePage() {
                         alt={post.title}
                         fill
                         sizes="(max-width: 768px) 100vw, 33vw"
+                        quality={90}
                         className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
                       />
                     )}
