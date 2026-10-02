@@ -143,14 +143,17 @@ export default async function HomePage() {
         {/* ── HERO ─────────────────────────────────────────────── */}
         <section className="relative w-full bg-[#F0EFEC] overflow-hidden" style={{ height: '100vh' }}>
 
-          {/* Imagen principal — 100% en mobile, 81% en desktop */}
+          {/* Imagen principal — 100% en mobile, 81% en desktop.
+              sizes mobile = 170vw (no 100vw): con object-cover y alto 100vh la foto horizontal se
+              dibuja mucho más ancha que el viewport; con 100vw el navegador bajaba una versión
+              chica y se veía borrosa hasta cambiar el tamaño de la ventana (David, 2026-10-02). */}
           <div className="absolute left-0 top-0 bottom-0 w-full md:w-[81%] overflow-hidden group/hero">
             {heroImgUrl ? (
               <Image
                 src={heroImgUrl}
                 alt="Hero"
                 fill
-                sizes="(max-width: 768px) 100vw, 81vw"
+                sizes="(max-width: 768px) 170vw, 81vw"
                 quality={90}
                 priority
                 className="object-cover transition-transform duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/hero:scale-[1.12]"
