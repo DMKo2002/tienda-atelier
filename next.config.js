@@ -43,9 +43,6 @@ const nextConfig = {
     // ajenas a cargo de nuestra cuenta de Vercel.
     remotePatterns: [
       { protocol: 'https', hostname: '*.supabase.co', pathname: '/storage/v1/object/public/**' },
-      // Fotos de My Queen Trend que siguen en el sitio viejo; sacar cuando se migren a Supabase Storage.
-      { protocol: 'https', hostname: 'myqueentrend.com' },
-      { protocol: 'https', hostname: 'www.myqueentrend.com' },
     ],
   },
 }
